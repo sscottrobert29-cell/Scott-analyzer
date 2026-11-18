@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Scott Analyzer</title>
+<style>
+body{font-family:Arial;padding:20px;background:#111;color:#fff;text-align:center}
+textarea{width:90%;height:120px;padding:10px}
+button{padding:12px 20px;background:#00ff88;border:none;font-size:18px;margin:10px}
+#result{margin-top:20px;font-size:20px;color:#00ff88}
+</style>
+</head>
+<body>
+<h1>Scott Analyzer</h1>
+<p>Paste your text below</p>
+<textarea id="t" placeholder="Type or paste here..."></textarea><br>
+<button onclick="go()">Analyze</button>
+<div id="result"></div>
+<script>
+function go(){
+let v=document.getElementById('t').value;
+let words=v.trim()?v.trim().split(/\s+/).length:0;
+document.getElementById('result').innerHTML="Words: "+words+"<br>Characters: "+v.length;
+}
+</script>
+</body>
+</html>
