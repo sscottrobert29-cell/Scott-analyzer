@@ -21,15 +21,19 @@ p.sub{color:#6b7280;line-height:1.6;max-width:620px}
 select{width:100%;padding:12px;border:1px solid #e5e7eb;border-radius:10px;margin:8px 0;font-size:16px}
 .price{font-size:44px;font-weight:900} .digit{font-size:64px;font-weight:900;color:#2563eb}
 .digits{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
-.digits div{background:#f8fafc;border-radius:10px;padding:10px;text-align:center}
+.digits div{background:#f8fafc;border-radius:10px;padding:10px;text-align:center;display:flex;flex-direction:column}
+.digits small{display:block;font-size:12px;color:#6b7280}
+.digits b{display:block;font-size:18px}
 .pred{margin-top:14px;padding:14px;background:#eff6ff;border-radius:14px;font-weight:800}
+.evenodd{margin-top:10px;padding:14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;font-weight:800}
+.matches{margin-top:10px;padding:14px;background:#fef3c7;border:1px solid #fde68a;border-radius:14px;font-weight:800}
 .status{font-size:13px;color:#6b7280;margin-top:8px}
 </style>
 </head>
 <body>
-<div class="ticker" id="ticker">Loading live prices... V4 New Server</div>
+<div class="ticker" id="ticker">Loading live prices... V6 Matches/Differs</div>
 <header><div class="logo">↗ Scott <b>Digits</b></div><div>☰</div></header>
-<div class="hero"><span class="pill">LIVE • DERIV MARKETS • V4</span><h1>See what's likely <i>before</i><br>the market does.</h1><p class="sub">Scott Digits streams every tick from Deriv in real time.</p></div>
+<div class="hero"><span class="pill">LIVE • DERIV MARKETS • V6</span><h1>See what's likely <i>before</i><br>the market does.</h1><p class="sub">Scott Digits streams every tick from Deriv in real time.</p></div>
 <div class="grid"><div class="card"><small>DATA</small><b>Live • Deriv feed</b></div><div class="card"><small>MARKETS</small><b>Every Deriv symbol</b></div><div class="card"><small>PLANS</small><b>Free • Pro • Pro Plus</b></div><div class="card"><small>TRY IT</small><b>No card required</b></div></div>
 <div class="live"><div class="livebox">
 <small style="color:#2563eb;font-weight:800">WHY SCOTT DIGITS • LIVE</small><h2 style="margin:8px 0">Live Prediction</h2>
@@ -37,25 +41,24 @@ select{width:100%;padding:12px;border:1px solid #e5e7eb;border-radius:10px;margi
 <select id="market"><option value="R_10">Volatility 10 (1s) Index</option><option value="R_25" selected>Volatility 25 (1s) Index</option><option value="R_50">Volatility 50 (1s) Index</option><option value="R_75">Volatility 75 (1s) Index</option><option value="R_100">Volatility 100 (1s) Index</option><option value="JD10">Jump 10 Index</option><option value="JD25">Jump 25 Index</option><option value="JD50">Jump 50 Index</option><option value="JD100">Jump 100 Index</option></select>
 <label>Prediction - Over</label>
 <select id="overDigit"><option>0</option><option selected>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select>
+<label>Prediction - Matches / Differs Digit</label>
+<select id="matchDigit"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option selected>5</option><option>6</option><option>7</option><option>8</option><option>9</option></select>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;text-align:center;margin-top:10px"><div><small>CURRENT PRICE</small><div class="price" id="price">--</div></div><div><small>LAST DIGIT</small><div class="digit" id="lastDigit">-</div></div></div>
 <div class="pred" id="pred">Waiting for ticks...</div>
-<div class="status" id="status">Connecting V4...</div>
+<div class="evenodd" id="evenodd">Even / Odd: Waiting...</div>
+<div class="matches" id="matches">Matches / Differs: Waiting...</div>
+<div class="status" id="status">Connecting V6...</div>
 <div><small>DIGIT DISTRIBUTION - LAST 100 TICKS</small><div class="digits" id="dist"></div></div>
 <div style="margin-top:10px;font-size:13px;color:#6b7280">Ticks: <b id="tickCount">0</b></div>
 </div></div>
 <script>
 let ws, counts = Array(10).fill(0), total=0, lastPrices={};
 let currentSymbol = document.getElementById('market').value;
-let endpoints = [
- 'wss://api.derivws.com/trading/v1/options/ws/public',
- 'wss://ws.derivws.com/websockets/v3?app_id=1089',
- 'wss://blue.derivws.com/websockets/v3?app_id=1089',
- 'wss://ws.binaryws.com/websockets/v3?app_id=1089'
-];
+let endpoints = ['wss://api.derivws.com/trading/v1/options/ws/public','wss://ws.derivws.com/websockets/v3?app_id=1089','wss://blue.derivws.com/websockets/v3?app_id=1089','wss://ws.binaryws.com/websockets/v3?app_id=1089'];
 let epIndex = 0;
 function connect(){
   let url = endpoints[epIndex];
-  document.getElementById('status').textContent = 'Trying V4 ' + (epIndex+1) + '/4 : ' + url;
+  document.getElementById('status').textContent = 'Trying V6 ' + (epIndex+1) + '/4 : ' + url;
   ws = new WebSocket(url);
   ws.onopen = () => {
     document.getElementById('status').textContent = 'Connected ✅ ' + url;
@@ -77,12 +80,22 @@ function connect(){
         for(let i=over+1;i<=9;i++) winCount+=counts[i];
         let pct = total>0?Math.round(winCount/total*100):0;
         document.getElementById('pred').textContent = `Over ${over} : ${pct}% chance • Last digit ${lastDigit} - ${lastDigit>over?'WIN ✅':'LOSS ❌'}`;
+        let evenCount = counts[0]+counts[2]+counts[4]+counts[6]+counts[8];
+        let oddCount = total - evenCount;
+        let evenPct = total>0?Math.round(evenCount/total*100):0;
+        let oddPct = total>0?Math.round(oddCount/total*100):0;
+        document.getElementById('evenodd').textContent = `Even: ${evenPct}% • Odd: ${oddPct}% • Last digit ${lastDigit} is ${lastDigit%2===0?'EVEN':'ODD'}`;
+        let matchD = parseInt(document.getElementById('matchDigit').value);
+        let matchCount = counts[matchD];
+        let matchPct = total>0?Math.round(matchCount/total*100):0;
+        let differPct = 100 - matchPct;
+        document.getElementById('matches').textContent = `Matches ${matchD}: ${matchPct}% • Differs ${matchD}: ${differPct}% • Last digit ${lastDigit} - ${lastDigit===matchD?'MATCHES ✅':'DIFFERS ✅'}`;
         if(total>=100){ counts=Array(10).fill(0); total=0; }
-        let html=''; for(let i=0;i<=9;i++){ let p=total>0?Math.round(counts[i]/total*100):0; html+=`<div><small>${i}</small><b>${p}%</b></div>`; }
+        let html=''; for(let i=0;i<=9;i++){ let p=total>0?Math.round(counts[i]/total*100):0; html+=`<div><small>Digit ${i}</small><b>${p}%</b></div>`; }
         document.getElementById('dist').innerHTML = html;
       }
     }
-    if(d.error){ document.getElementById('status').textContent = 'Error: ' + d.error.message + ' - trying next server...'; epIndex=(epIndex+1)%endpoints.length; setTimeout(connect,1500); }
+    if(d.error){ document.getElementById('status').textContent = 'Error: ' + d.error.message; epIndex=(epIndex+1)%endpoints.length; setTimeout(connect,1500); }
   };
   ws.onclose = (e) => { document.getElementById('status').textContent = 'Failed ' + (epIndex+1) + '/4 Code ' + e.code + ' - trying next...'; epIndex=(epIndex+1)%endpoints.length; setTimeout(connect,2000); };
   ws.onerror = () => { try{ws.close()}catch(e){} };
