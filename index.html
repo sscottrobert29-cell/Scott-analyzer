@@ -60,7 +60,7 @@ select{background:#333;color:#fff}button{background:#00ff88;color:#000;font-weig
 <div class="small" id="copyMsg" style="text-align:center"></div>
 <div class="card" style="text-align:left"><b>Digit Stats (Last 100 Ticks)</b><div id="stats" class="small">Waiting...</div><div class="small" style="margin-top:10px">For learning / analysis only. Deriv digits are random. No prediction can guarantee a win.</div></div>
 <script>
-let mode='Matches',digits=[],allDigits=[],ws,symbol='R_100';
+let mode='Matches',digits=[],allDigits=[],ws,symbol='1HZ100V';
 document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#modes button').forEach(x=>x.classList.remove('on'));b.classList.add('on');mode=b.dataset.m;analyze();});
 document.getElementById('market').onchange=e=>{symbol=e.target.value;allDigits=[];digits=[];connect();};
 function connect(){if(ws)ws.close();ws=new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=1089');ws.onopen=()=>{document.getElementById('status').textContent='Live - '+symbol+' - Connected to Deriv';ws.send(JSON.stringify({ticks:symbol,subscribe:1}));};ws.onmessage=m=>{let d=JSON.parse(m.data);if(d.tick){let q=d.tick.quote.toString();let digit=parseInt(q.slice(-1));document.getElementById('price').textContent=q;document.getElementById('lastDigit').textContent=digit;allDigits.push(digit);if(allDigits.length>100)allDigits.shift();digits=allDigits.slice(-20);document.getElementById('last20').innerHTML=digits.map(x=>`<span class="digit">${x}</span>`).join('');document.getElementById('eo').textContent=allDigits.slice(-10).map(x=>x%2==0?'E':'O').join(' ');updateStats();}};ws.onclose=()=>{document.getElementById('status').textContent='Disconnected - reconnecting...';setTimeout(connect,2000);};}
