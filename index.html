@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Scott Analyzer - AI Prediction</title>
+<title>Scott Analyzer</title>
 <style>
 body{background:#0f1115;color:white;font-family:Arial;text-align:center;padding:15px}
 select{width:100%;padding:12px;border-radius:10px;font-size:16px;background:#1a1d24;color:white;border:1px solid #333}
@@ -11,7 +11,6 @@ select{width:100%;padding:12px;border-radius:10px;font-size:16px;background:#1a1
 .tabs button.active{background:#00c9a7;color:white}
 .circle{width:180px;height:180px;border-radius:50%;background:#1e2a3a;border:5px solid #00c9a7;margin:20px auto;display:flex;flex-direction:column;justify-content:center}
 .circle b{font-size:70px;color:#00c9a7}
-.circle span{font-size:12px;color:#aaa}
 .card{background:#1a1d24;padding:12px;border-radius:12px;margin:8px 0;text-align:left}
 button.main{width:100%;padding:14px;background:#00c9a7;border:none;border-radius:12px;font-size:18px;font-weight:bold}
 </style>
@@ -36,10 +35,11 @@ button.main{width:100%;padding:14px;background:#00c9a7;border:none;border-radius
 <button onclick="setType('under',this)">Under</button>
 </div>
 <div class="circle"><b id="aiDigit">-</b><span>AI PREDICTION</span></div>
-<div id="aiText">Waiting for ticks...</div>
-<div class="card" id="overBox"></div>
-<div class="card" id="evenBox"></div>
-<div class="card" id="matchBox"></div>
+<div id="aiText">Connecting...</div>
+<div id="status" style="color:yellow;font-size:12px">Status: Connecting to Deriv...</div>
+<div class="card" id="overBox">Over box waiting</div>
+<div class="card" id="evenBox">Even box waiting</div>
+<div class="card" id="matchBox">Match box waiting</div>
 <button class="main" onclick="location.reload()">Analyze Digits</button>
 <p id="price">Current Price: - | Last Digit: -</p>
 <p id="dist"></p>
@@ -48,6 +48,7 @@ let type='matches';
 let ticks=[];
 let currentSymbol='R_25';
 let ws;
+let triedBinary=false;
 function setType(t,btn){type=t;document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');updateAI();}
 function updateAI(){
  if(ticks.length<5) return;
@@ -56,17 +57,17 @@ function updateAI(){
  let maxDigit=counts.indexOf(Math.max(...counts));
  let minDigit=counts.indexOf(Math.min(...counts));
  let ai=maxDigit;
- if(type==='matches') ai=maxDigit;
  if(type==='differs') ai=minDigit;
  if(type==='even') ai=8;
  if(type==='odd') ai=7;
  if(type==='over') ai=1;
  if(type==='under') ai=8;
  document.getElementById('aiDigit').innerText=ai;
- document.getElementById('aiText').innerText = type.toUpperCase() + ' Prediction: ' + ai + ' | ' + document.getElementById('market').options[document.getElementById('market').selectedIndex].text;
+ document.getElementById('aiText').innerText=type.toUpperCase()+' Prediction: '+ai;
 }
 function handlePrice(price){
  let digit=parseInt(String(price).slice(-1));
+ if(isNaN(digit)) return;
  ticks.push(digit); if(ticks.length>100) ticks.shift();
  document.getElementById('price').innerText='Current Price: '+price+' | Last Digit: '+digit;
  let counts=Array(10).fill(0); ticks.forEach(d=>counts[d]++);
@@ -74,25 +75,35 @@ function handlePrice(price){
  let even=ticks.filter(d=>d%2==0).length;
  document.getElementById('overBox').innerHTML='Over 1: '+over1+'% • Last digit '+digit+' - '+(digit>1?'WIN ✅':'LOSS ❌');
  document.getElementById('evenBox').innerHTML='Even: '+even+'% • Odd: '+(100-even)+'% • Last digit '+digit+' is '+(digit%2==0?'EVEN':'ODD');
- document.getElementById('matchBox').innerHTML='Matches 5: '+counts[5]+'% • Differs 5: '+(100-counts[5])+'% • Last digit '+digit+' - '+(digit==5?'MATCHES ✅':'DIFFERS ✅');
- document.getElementById('dist').innerHTML='DIGIT DISTRIBUTION - LAST 100 TICKS<br>'+counts.map((c,i)=>'Digit '+i+': '+c+'%').join(' | ');
+ document.getElementById('matchBox').innerHTML='Matches 5: '+counts[5]+'% • Differs 5: '+(100-counts[5])+'% • Last digit '+digit;
+ document.getElementById('dist').innerHTML='LAST 100 TICKS<br>'+counts.map((c,i)=>'Digit '+i+': '+c+'%').join(' | ');
  updateAI();
 }
-function connect(){
+function connect(url){
+ document.getElementById('status').innerText='Status: Trying '+url;
  if(ws) ws.close();
  ticks=[];
- ws=new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=1089');
- ws.onopen=()=>{ws.send(JSON.stringify({ticks_history:currentSymbol, count:100, end:'latest', subscribe:1}))};
+ ws=new WebSocket(url);
+ ws.onopen=()=>{
+  document.getElementById('status').innerText='Status: Connected! Requesting ticks...';
+  ws.send(JSON.stringify({ticks_history:currentSymbol,count:100,end:'latest',subscribe:1,style:'ticks'}));
+  ws.send(JSON.stringify({ticks:currentSymbol,subscribe:1}));
+ };
  ws.onmessage=(e)=>{
   let data=JSON.parse(e.data);
-  if(data.history && data.history.prices){
-    data.history.prices.forEach(p=>handlePrice(p));
-  }
-  if(data.tick){ handlePrice(data.tick.quote); }
+  if(data.msg_type==='ping'){ws.send(JSON.stringify({pong:1}));return;}
+  if(data.error){document.getElementById('status').innerText='Status: Deriv Error: '+data.error.message;}
+  if(data.history && data.history.prices){document.getElementById('status').innerText='Status: Got history!'; data.history.prices.forEach(p=>handlePrice(p));}
+  if(data.tick){handlePrice(data.tick.quote);}
+ };
+ ws.onerror=()=>{document.getElementById('status').innerText='Status: Connection failed, trying other server...';};
+ ws.onclose=()=>{
+  if(!triedBinary){triedBinary=true; setTimeout(()=>connect('wss://ws.binaryws.com/websockets/v3?app_id=1089'),2000);}
+  else {document.getElementById('status').innerText='Status: Both servers failed - check internet / VPN'; setTimeout(()=>{triedBinary=false;connect('wss://ws.derivws.com/websockets/v3?app_id=1089')},5000);}
  };
 }
-function changeMarket(){ currentSymbol=document.getElementById('market').value; connect(); }
-connect();
+function changeMarket(){currentSymbol=document.getElementById('market').value; triedBinary=false; connect('wss://ws.derivws.com/websockets/v3?app_id=1089');}
+connect('wss://ws.derivws.com/websockets/v3?app_id=1089');
 </script>
 </body>
 </html>
