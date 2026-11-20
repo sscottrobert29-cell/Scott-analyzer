@@ -19,8 +19,6 @@ button.main{width:100%;padding:14px;background:#00c9a7;border:none;border-radius
 <body>
 <h2>SCOTT ANALYZER 🤖</h2>
 <p>AI Prediction Analyzer</p>
-
-<!-- MARKET SELECT - NEW! -->
 <label>VOLATILITY</label>
 <select id="market" onchange="changeMarket()">
 <option value="R_25">Volatility 25 (1s)</option>
@@ -29,7 +27,6 @@ button.main{width:100%;padding:14px;background:#00c9a7;border:none;border-radius
 <option value="R_50">Volatility 50 (1s)</option>
 <option value="R_100">Volatility 100 (1s)</option>
 </select>
-
 <div class="tabs">
 <button onclick="setType('matches',this)" class="active">Matches</button>
 <button onclick="setType('differs',this)">Differs</button>
@@ -38,26 +35,20 @@ button.main{width:100%;padding:14px;background:#00c9a7;border:none;border-radius
 <button onclick="setType('over',this)">Over</button>
 <button onclick="setType('under',this)">Under</button>
 </div>
-
 <div class="circle"><b id="aiDigit">-</b><span>AI PREDICTION</span></div>
 <div id="aiText">Waiting for ticks...</div>
-
 <div class="card" id="overBox"></div>
 <div class="card" id="evenBox"></div>
 <div class="card" id="matchBox"></div>
-
 <button class="main" onclick="location.reload()">Analyze Digits</button>
 <p id="price">Current Price: - | Last Digit: -</p>
 <p id="dist"></p>
-
 <script>
 let type='matches';
 let ticks=[];
 let currentSymbol='R_25';
 let ws;
-
 function setType(t,btn){type=t;document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');updateAI();}
-
 function updateAI(){
  if(ticks.length<5) return;
  let counts=Array(10).fill(0);
@@ -72,35 +63,35 @@ function updateAI(){
  if(type==='over') ai=1;
  if(type==='under') ai=8;
  document.getElementById('aiDigit').innerText=ai;
- document.getElementById('aiText').innerText = type.toUpperCase() + ' Prediction: ' + ai + ' | Market: ' + document.getElementById('market').options[document.getElementById('market').selectedIndex].text;
+ document.getElementById('aiText').innerText = type.toUpperCase() + ' Prediction: ' + ai + ' | ' + document.getElementById('market').options[document.getElementById('market').selectedIndex].text;
 }
-
+function handlePrice(price){
+ let digit=parseInt(String(price).slice(-1));
+ ticks.push(digit); if(ticks.length>100) ticks.shift();
+ document.getElementById('price').innerText='Current Price: '+price+' | Last Digit: '+digit;
+ let counts=Array(10).fill(0); ticks.forEach(d=>counts[d]++);
+ let over1=ticks.filter(d=>d>1).length;
+ let even=ticks.filter(d=>d%2==0).length;
+ document.getElementById('overBox').innerHTML='Over 1: '+over1+'% • Last digit '+digit+' - '+(digit>1?'WIN ✅':'LOSS ❌');
+ document.getElementById('evenBox').innerHTML='Even: '+even+'% • Odd: '+(100-even)+'% • Last digit '+digit+' is '+(digit%2==0?'EVEN':'ODD');
+ document.getElementById('matchBox').innerHTML='Matches 5: '+counts[5]+'% • Differs 5: '+(100-counts[5])+'% • Last digit '+digit+' - '+(digit==5?'MATCHES ✅':'DIFFERS ✅');
+ document.getElementById('dist').innerHTML='DIGIT DISTRIBUTION - LAST 100 TICKS<br>'+counts.map((c,i)=>'Digit '+i+': '+c+'%').join(' | ');
+ updateAI();
+}
 function connect(){
  if(ws) ws.close();
  ticks=[];
  ws=new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=1089');
- ws.onopen=()=>{ws.send(JSON.stringify({ticks:currentSymbol}))};
+ ws.onopen=()=>{ws.send(JSON.stringify({ticks_history:currentSymbol, count:100, end:'latest', subscribe:1}))};
  ws.onmessage=(e)=>{
   let data=JSON.parse(e.data);
-  if(data.tick){
-   let price=data.tick.quote; let digit=parseInt(String(price).slice(-1));
-   ticks.push(digit); if(ticks.length>100) ticks.shift();
-   document.getElementById('price').innerText='Current Price: '+price+' | Last Digit: '+digit;
-   let counts=Array(10).fill(0); ticks.forEach(d=>counts[d]++);
-   let over1=ticks.filter(d=>d>1).length;
-   let even=ticks.filter(d=>d%2==0).length;
-   document.getElementById('overBox').innerHTML='Over 1: '+over1+'% • Last digit '+digit+' - '+(digit>1?'WIN ✅':'LOSS ❌');
-   document.getElementById('evenBox').innerHTML='Even: '+even+'% • Odd: '+(100-even)+'% • Last digit '+digit+' is '+(digit%2==0?'EVEN':'ODD');
-   document.getElementById('matchBox').innerHTML='Matches 5: '+counts[5]+'% • Differs 5: '+(100-counts[5])+'% • Last digit '+digit+' - '+(digit==5?'MATCHES ✅':'DIFFERS ✅');
-   document.getElementById('dist').innerHTML='DIGIT DISTRIBUTION - LAST 100 TICKS<br>'+counts.map((c,i)=>'Digit '+i+': '+c+'%').join(' | ');
-   updateAI();
+  if(data.history && data.history.prices){
+    data.history.prices.forEach(p=>handlePrice(p));
   }
+  if(data.tick){ handlePrice(data.tick.quote); }
  };
 }
-function changeMarket(){
- currentSymbol=document.getElementById('market').value;
- connect();
-}
+function changeMarket(){ currentSymbol=document.getElementById('market').value; connect(); }
 connect();
 </script>
 </body>
