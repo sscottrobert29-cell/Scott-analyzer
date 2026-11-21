@@ -2,74 +2,208 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SCOTT ANALYZER - MANUAL AI</title>
+<title>Master Entries Style - Deriv Live</title>
 <style>
-body{background:#000;color:#fff;font-family:Arial;text-align:center;padding:15px}
-h1{color:#00e5c7}
-.circle{border:3px solid #00e5c7;border-radius:50%;width:220px;height:220px;margin:15px auto;display:flex;align-items:center;justify-content:center;flex-direction:column}
-#pred{font-size:28px;font-weight:bold;color:#00e5c7}
-input{font-size:30px;width:70px;text-align:center;padding:10px;border-radius:10px}
-button{background:#00e5c7;border:0;padding:13px 20px;border-radius:10px;font-weight:bold;font-size:16px;margin:5px}
-.box{background:#1a1a1a;padding:12px;border-radius:12px;margin:8px;text-align:left}
-small{color:#aaa}
+body{background:#111;color:#fff;font-family:Arial;text-align:center;padding:12px}
+button{background:#00c853;color:#fff;border:none;padding:11px 14px;font-size:14px;border-radius:10px;margin:4px}
+button.active{background:#ff3d00}
+select,input{padding:10px;font-size:16px;border-radius:8px;width:100%;margin:6px 0;background:#222;color:#fff;border:1px solid #444}
+.big{font-size:38px;font-weight:bold}
+.box{background:#222;padding:14px;border-radius:12px;margin-top:10px}
+.hot{color:#00e676;font-size:28px;font-weight:bold}
+.hot2{color:#ffcc00;font-size:20px;font-weight:bold}
+td{padding:7px;border:1px solid #444}
+.tab{padding:10px;background:#333;border-radius:8px;display:inline-block;margin:3px;cursor:pointer}
+.tab.active{background:#ff3d00}
+#status{font-size:13px;padding:8px;border-radius:8px}
 </style>
 </head>
 <body>
-<h1>SCOTT ANALYZER 🤖</h1>
-<p>AI Prediction Analyzer - MANUAL</p>
-<p>VOLATILITY - Matches AI</p>
+<h2>🔴 MASTER ENTRIES STYLE</h2>
+<p>Deriv Live Auto Analyzer</p>
 
-<div class="circle">
-<div>AI PREDICTION</div>
-<div id="pred">Add digits</div>
-<div id="conf"></div>
+<div id="status" style="background:#333">Status: Not Connected - Press START LIVE</div>
+
+<label>Select Index:</label>
+<select id="symbol" onchange="changeSymbol()">
+<option value="R_100">Volatility 100 (1s) Index - Master Entries</option>
+<option value="R_25">Volatility 25 (1s) Index</option>
+<option value="R_75">Volatility 75 (1s) Index</option>
+<option value="R_50">Volatility 50 (1s) Index</option>
+<option value="R_10">Volatility 10 (1s) Index</option>
+</select>
+
+<div class="box">
+<div>Current Price LIVE:</div>
+<div class="big" id="price">---</div>
+<div>Last Digit: <span id="last">-</span> | Index: <span id="idx">R_100</span></div>
 </div>
 
-<p>Type Last Digit from Deriv:</p>
-<input id="d" type="number" min="0" max="9" placeholder="0-9">
-<br><br>
-<button onclick="addDigit()">ADD DIGIT ➕</button>
-<button onclick="clearAll()" style="background:#ff4444;color:#fff">CLEAR</button>
+<button onclick="start()">▶ START LIVE</button>
+<button onclick="clearAll()">🗑 CLEAR</button>
+<button onclick="toggleManual()">✍️ MANUAL MODE</button>
 
-<div class="box" id="history">History: -</div>
-<div class="box" id="stats">Stats: Add 10+ digits for AI</div>
-<div class="box" id="matchesBox">Matches AI: Waiting...</div>
-<div class="box" id="otherBox">Even/Odd - Over/Under: Waiting...</div>
+<div id="manualBox" class="box" style="display:none">
+<p><b>Manual Mode - If LIVE fails, type digits here:</b></p>
+<input type="number" id="manualDigit" placeholder="Type 1 digit 0-9" min="0" max="9">
+<button onclick="addManual()">ADD DIGIT +</button>
+<p style="font-size:12px;color:#aaa">This is your OLD Matches backup. Works even without internet to Deriv.</p>
+</div>
+
+<div style="margin-top:12px">
+<div class="tab active" id="tabMatches" onclick="setStrategy('matches')">MATCHES</div>
+<div class="tab" id="tabEvenOdd" onclick="setStrategy('evenodd')">EVEN / ODD</div>
+<div class="tab" id="tabOverUnder" onclick="setStrategy('overunder')">OVER / UNDER</div>
+</div>
+
+<div class="box">
+<div id="stratTitle">PREDICTION FOR MATCHES:</div>
+<div class="hot" id="pred">Press START LIVE, wait 20 ticks...</div>
+<div class="hot2" id="pred2"></div>
+<div id="count">Ticks collected: 0 / 100</div>
+<div id="advice" style="font-size:13px;color:#ffcc00;margin-top:6px"></div>
+</div>
+
+<div class="box" id="table"></div>
+<div class="box" id="allStats"></div>
+
+<p style="font-size:12px;color:#aaa">⚠️ Digits are random. This only shows what came MOST in last 100 ticks. Use Demo only. Stake $0.35, Duration 5 ticks, Profit $10, Loss $10. If LIVE fails, use MANUAL MODE and go back to Matches.</p>
 
 <script>
-let digits=[];
-function addDigit(){
- let v=document.getElementById('d').value;
- if(v===""||v<0||v>9){alert("Type 0 to 9 only");return;}
- digits.push(parseInt(v));
- document.getElementById('d').value="";
- document.getElementById('d').focus();
- update();
+let digits = [];
+let ws;
+let currentSymbol = 'R_100';
+let strategy = 'matches';
+let reconnectTries = 0;
+
+function setStrategy(s){
+  strategy = s;
+  document.getElementById('tabMatches').className = 'tab' + (s==='matches'?' active':'');
+  document.getElementById('tabEvenOdd').className = 'tab' + (s==='evenodd'?' active':'');
+  document.getElementById('tabOverUnder').className = 'tab' + (s==='overunder'?' active':'');
+  document.getElementById('stratTitle').innerText = s==='matches' ? 'PREDICTION FOR MATCHES:' : s==='evenodd' ? 'PREDICTION FOR EVEN / ODD:' : 'PREDICTION FOR OVER / UNDER:';
+  update();
 }
-function clearAll(){digits=[];update();}
+function changeSymbol(){
+  currentSymbol = document.getElementById('symbol').value;
+  document.getElementById('idx').innerText = currentSymbol;
+  clearAll();
+  start();
+}
+function toggleManual(){
+  let b = document.getElementById('manualBox');
+  b.style.display = b.style.display==='none' ? 'block' : 'none';
+}
+function addManual(){
+  let v = document.getElementById('manualDigit').value;
+  if(v==='' || v<0 || v>9){ alert('Type 0-9 only'); return; }
+  digits.push(parseInt(v));
+  if(digits.length>100) digits.shift();
+  document.getElementById('manualDigit').value='';
+  update();
+  document.getElementById('status').innerText = 'Status: MANUAL MODE - ' + digits.length + ' digits typed';
+  document.getElementById('status').style.background = '#ff9800';
+}
+function start(){
+  document.getElementById('status').innerText = 'Status: Connecting to Deriv Live... ' + currentSymbol;
+  document.getElementById('status').style.background = '#333';
+  if(ws) ws.close();
+  try{
+    ws = new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=1089');
+  }catch(e){ failConnect(); return; }
+  ws.onopen = () => {
+    reconnectTries = 0;
+    document.getElementById('status').innerText = 'Status: ✅ CONNECTED LIVE - ' + currentSymbol;
+    document.getElementById('status').style.background = '#00c853';
+    ws.send(JSON.stringify({ticks: currentSymbol}));
+  };
+  ws.onerror = () => { failConnect(); };
+  ws.onclose = () => {
+    if(digits.length < 5) failConnect();
+  };
+  ws.onmessage = (msg) => {
+    let d = JSON.parse(msg.data);
+    if(d.tick){
+      let price = d.tick.quote.toString();
+      let lastDigit = price.slice(-1);
+      document.getElementById('price').innerText = price;
+      document.getElementById('last').innerText = lastDigit;
+      digits.push(parseInt(lastDigit));
+      if(digits.length > 100) digits.shift();
+      update();
+    }
+    if(d.error){
+      failConnect();
+    }
+  };
+  // If no tick in 8 seconds, show fail
+  setTimeout(()=>{
+    if(digits.length===0 && document.getElementById('status').innerText.includes('Connecting')){
+      failConnect();
+    }
+  }, 8000);
+}
+function failConnect(){
+  document.getElementById('status').innerText = 'Status: ❌ FAILED TO CONNECT TO DERIV LIVE - Switched to MANUAL MODE / MATCHES Backup. Press MANUAL MODE and type digits.';
+  document.getElementById('status').style.background = '#d50000';
+  document.getElementById('manualBox').style.display = 'block';
+  // Auto go back to Matches like you said
+  setStrategy('matches');
+}
 function update(){
- document.getElementById('history').innerText="History ("+digits.length+"): "+digits.slice(-30).join(" - ");
- if(digits.length<5){document.getElementById('pred').innerText="Add "+(10-digits.length)+" more";return;}
- // AI: Frequency in last 20 + last 50 + streak
- let last20=digits.slice(-20);
- let counts=[0,0,0,0,0,0,0,0,0,0];
- last20.forEach(d=>counts[d]++);
- let best=0; counts.forEach((c,i)=>{if(c>counts[best]) best=i;});
- let bestPct=Math.round(counts[best]/last20.length*100);
- // Hot digit + cold + pattern
- let even=digits.filter(d=>d%2==0).length;
- let odd=digits.length-even;
- let over=digits.filter(d=>d>4).length;
- let under=digits.length-over;
- let evenPct=Math.round(even/digits.length*100);
- let overPct=Math.round(over/digits.length*100);
- // Confidence: if best digit repeats a lot = high
- let conf = bestPct>=35 ? "HIGH 🔥" : bestPct>=25 ? "MEDIUM ⚡" : "LOW";
- document.getElementById('pred').innerText="MATCHES: "+best;
- document.getElementById('conf').innerText=conf+" - "+bestPct+"% in last 20";
- document.getElementById('stats').innerText="Total: "+digits.length+" | Most Frequent: "+best+" ("+counts[best]+"x) | Even "+evenPct+"% Odd "+(100-evenPct)+"% | Over "+overPct+"% Under "+(100-overPct)+"%";
- document.getElementById('matchesBox').innerText="🎯 MATCHES AI: Play Digit "+best+" | Confidence "+conf+" | Reason: Digit "+best+" appeared "+counts[best]+" times in last 20 digits. If pattern continues, it is most likely to repeat.";
- document.getElementById('otherBox').innerText="Even: "+evenPct+"% | Odd: "+(100-evenPct)+"% | Over 4: "+overPct+"% | Under 5: "+(100-overPct)+"% - Play the higher %";
+  let counts = [0,0,0,0,0,0,0,0,0,0];
+  digits.forEach(n => counts[n]++);
+  let max = Math.max(...counts);
+  let hot = counts.indexOf(max);
+  document.getElementById('count').innerText = 'Ticks collected: ' + digits.length + ' / 100';
+
+  let even = counts[0]+counts[2]+counts[4]+counts[6]+counts[8];
+  let odd = digits.length - even;
+  let over = counts[5]+counts[6]+counts[7]+counts[8]+counts[9];
+  let under = digits.length - over;
+
+  if(digits.length >= 20){
+    if(strategy==='matches'){
+      let pct = Math.round(max/digits.length*100);
+      document.getElementById('pred').innerText = 'Digit ' + hot + ' - ' + pct + '%';
+      document.getElementById('pred2').innerText = 'In Deriv Automate: Matches | Digit ' + hot + ' | Duration 5 ticks';
+      document.getElementById('advice').innerText = pct>=20 ? '✅ Strong: '+pct+'% is high. Try 1 run only.' : '⚠️ Weak: All digits similar. WAIT, do NOT trade.';
+    } else if(strategy==='evenodd'){
+      let winner = even>odd ? 'EVEN' : 'ODD';
+      let wpct = Math.round(Math.max(even,odd)/digits.length*100);
+      document.getElementById('pred').innerText = winner + ' - ' + wpct + '%';
+      document.getElementById('pred2').innerText = 'In Deriv Automate: Even/Odd | Choose ' + winner + ' | Duration 5 ticks';
+      document.getElementById('advice').innerText = wpct>=60 ? '✅ Strong Even/Odd signal' : '⚠️ Weak, WAIT';
+    } else {
+      let winner = over>under ? 'OVER 4' : 'UNDER 5';
+      let wpct = Math.round(Math.max(over,under)/digits.length*100);
+      document.getElementById('pred').innerText = winner + ' - ' + wpct + '%';
+      document.getElementById('pred2').innerText = 'In Deriv Automate: Over/Under | Choose ' + winner + ' | Duration 5 ticks';
+      document.getElementById('advice').innerText = wpct>=60 ? '✅ Strong Over/Under signal' : '⚠️ Weak, WAIT';
+    }
+  }
+
+  let html = '<b>Last 100 Digits Breakdown</b><table width="100%"><tr><th>Digit</th><th>Count</th><th>%</th></tr>';
+  for(let i=0;i<10;i++){
+    let bg = (i===hot && digits.length>=20) ? ' style="background:#00c853"' : '';
+    html += '<tr'+bg+'><td>'+i+'</td><td>'+counts[i]+'</td><td>'+Math.round(counts[i]/Math.max(1,digits.length)*100)+'%</td></tr>';
+  }
+  html += '</table><p>Last 20: ' + digits.slice(-20).join(' - ') + '</p>';
+  document.getElementById('table').innerHTML = html;
+
+  document.getElementById('allStats').innerHTML = '<b>ALL 3 STRATEGIES AT ONCE (Master Entries Style)</b><br>' +
+    '🎯 Matches: Digit <b>' + hot + '</b> (' + Math.round(max/Math.max(1,digits.length)*100) + '%)<br>' +
+    '⚖️ Even/Odd: EVEN ' + Math.round(even/Math.max(1,digits.length)*100) + '% vs ODD ' + Math.round(odd/Math.max(1,digits.length)*100) + '%<br>' +
+    '📈 Over/Under: OVER 4 ' + Math.round(over/Math.max(1,digits.length)*100) + '% vs UNDER 5 ' + Math.round(under/Math.max(1,digits.length)*100) + '%';
+}
+function clearAll(){
+  digits = [];
+  document.getElementById('pred').innerText = 'Cleared - Wait for 20 ticks...';
+  document.getElementById('pred2').innerText = '';
+  document.getElementById('table').innerHTML = '';
+  document.getElementById('allStats').innerHTML = '';
+  document.getElementById('advice').innerText = '';
+  document.getElementById('count').innerText = 'Ticks collected: 0 / 100';
 }
 </script>
 </body>
