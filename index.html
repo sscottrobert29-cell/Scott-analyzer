@@ -2,97 +2,75 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Scott Analyzer</title>
+<title>SCOTT ANALYZER - MANUAL AI</title>
 <style>
-body{background:#0f1115;color:white;font-family:Arial;text-align:center;padding:15px}
-select{width:100%;padding:12px;border-radius:10px;font-size:16px;background:#1a1d24;color:white;border:1px solid #333}
-.tabs{display:flex;gap:5px;margin:15px 0;overflow-x:auto}
-.tabs button{flex:1;padding:10px;border-radius:20px;border:none;background:#222;color:#aaa;font-weight:bold;min-width:60px}
-.tabs button.active{background:#00c9a7;color:white}
-.circle{width:180px;height:180px;border:4px solid #00c9a7;border-radius:50%;margin:20px auto;display:flex;align-items:center;justify-content:center;font-weight:bold}
-.box{background:#1a1d24;padding:15px;border-radius:10px;margin:10px 0;text-align:left}
-.btn{background:#00c9a7;color:white;border:none;padding:15px;width:100%;border-radius:10px;font-size:18px;font-weight:bold}
+body{background:#000;color:#fff;font-family:Arial;text-align:center;padding:15px}
+h1{color:#00e5c7}
+.circle{border:3px solid #00e5c7;border-radius:50%;width:220px;height:220px;margin:15px auto;display:flex;align-items:center;justify-content:center;flex-direction:column}
+#pred{font-size:28px;font-weight:bold;color:#00e5c7}
+input{font-size:30px;width:70px;text-align:center;padding:10px;border-radius:10px}
+button{background:#00e5c7;border:0;padding:13px 20px;border-radius:10px;font-weight:bold;font-size:16px;margin:5px}
+.box{background:#1a1a1a;padding:12px;border-radius:12px;margin:8px;text-align:left}
+small{color:#aaa}
 </style>
 </head>
 <body>
-<h2>SCOTT ANALYZER 🤖</h2>
-<p>AI Prediction Analyzer</p>
-<p>VOLATILITY</p>
-<select id="symbol">
-<option value="R_25">Volatility 25 (1s)</option>
-<option value="R_50">Volatility 50 (1s)</option>
-<option value="R_75">Volatility 75 (1s)</option>
-<option value="R_100">Volatility 100 (1s)</option>
-<option value="R_10">Volatility 10 (1s)</option>
-</select>
-<div class="tabs">
-<button class="active" onclick="setTab(this,'Matches')">Matches</button>
-<button onclick="setTab(this,'Differs')">Differs</button>
-<button onclick="setTab(this,'Even')">Even</button>
-<button onclick="setTab(this,'Odd')">Odd</button>
-<button onclick="setTab(this,'Over')">Over</button>
+<h1>SCOTT ANALYZER 🤖</h1>
+<p>AI Prediction Analyzer - MANUAL</p>
+<p>VOLATILITY - Matches AI</p>
+
+<div class="circle">
+<div>AI PREDICTION</div>
+<div id="pred">Add digits</div>
+<div id="conf"></div>
 </div>
-<div class="circle" id="pred">AI PREDICTION</div>
-<p>Connecting...</p>
-<p id="status" style="color:yellow;font-size:13px">Status: Starting...</p>
-<div class="box" id="overBox">Over box waiting</div>
-<div class="box" id="evenBox">Even box waiting</div>
-<div class="box" id="matchBox">Match box waiting</div>
-<button class="btn" onclick="analyze()">Analyze Digits</button>
-<p id="last">Last Digit: - | Price: -</p>
+
+<p>Type Last Digit from Deriv:</p>
+<input id="d" type="number" min="0" max="9" placeholder="0-9">
+<br><br>
+<button onclick="addDigit()">ADD DIGIT ➕</button>
+<button onclick="clearAll()" style="background:#ff4444;color:#fff">CLEAR</button>
+
+<div class="box" id="history">History: -</div>
+<div class="box" id="stats">Stats: Add 10+ digits for AI</div>
+<div class="box" id="matchesBox">Matches AI: Waiting...</div>
+<div class="box" id="otherBox">Even/Odd - Over/Under: Waiting...</div>
 
 <script>
-let ws=null, digits=[], currentTab='Matches', tryIndex=0;
-const servers=[
-"wss://ws.derivws.com/websockets/v3?app_id=1089",
-"wss://ws.deriv.com/websockets/v3?app_id=1089",
-"wss://frontend.derivws.com/websockets/v3?app_id=1089"
-];
-function setTab(el,t){document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));el.classList.add('active');currentTab=t;updateBoxes();}
-function setStatus(t){document.getElementById('status').innerText="Status: "+t;}
-function connect(){
-  if(tryIndex>=servers.length){setStatus("All servers failed - Turn OFF VPN, use WiFi / MTN data, then refresh");setTimeout(()=>{tryIndex=0;connect();},5000);return;}
-  let url=servers[tryIndex];
-  setStatus("Trying server "+(tryIndex+1)+" / 3 ...");
-  try{ws=new WebSocket(url);}catch(e){tryIndex++;connect();return;}
-  ws.onopen=()=>{
-    setStatus("✅ CONNECTED to Deriv - "+url);
-    ws.send(JSON.stringify({ticks_history:document.getElementById('symbol').value, count:100, end:"latest", style:"ticks"}));
-    ws.send(JSON.stringify({ticks:document.getElementById('symbol').value, subscribe:1}));
-  };
-  ws.onmessage=(e)=>{
-    let d=JSON.parse(e.data);
-    if(d.history&&d.history.prices){digits=d.history.prices.map(p=>{let s=p.toString();return parseInt(s[s.length-1]);});updateBoxes();}
-    if(d.tick&&d.tick.quote){let q=d.tick.quote.toString();let last=parseInt(q[q.length-1]);digits.push(last);if(digits.length>100)digits.shift();document.getElementById('last').innerText="Last Digit: "+last+" | Price: "+q;updateBoxes();}
-    if(d.error){setStatus("Deriv error: "+d.error.message);}
-  };
-  ws.onerror=()=>{setStatus("Server "+(tryIndex+1)+" failed, trying next...");};
-  ws.onclose=()=>{tryIndex++;if(tryIndex<3){setTimeout(connect,2000);}else{setStatus("All failed - retrying in 5s...");setTimeout(()=>{tryIndex=0;connect();},5000);}};
+let digits=[];
+function addDigit(){
+ let v=document.getElementById('d').value;
+ if(v===""||v<0||v>9){alert("Type 0 to 9 only");return;}
+ digits.push(parseInt(v));
+ document.getElementById('d').value="";
+ document.getElementById('d').focus();
+ update();
 }
-document.getElementById('symbol').addEventListener('change',()=>{digits=[];tryIndex=0;if(ws)ws.close();connect();});
-function updateBoxes(){
-  if(digits.length==0)return;
-  let last=digits[digits.length-1];
-  let even=digits.filter(x=>x%2==0).length;
-  let odd=digits.length-even;
-  let over=digits.filter(x=>x>4).length;
-  let match=0;for(let i=1;i<digits.length;i++)if(digits[i]==digits[i-1])match++;
-  document.getElementById('evenBox').innerText="Even box: "+even+" / "+digits.length+" - Last: "+last+(last%2==0?" (EVEN)":" (ODD)");
-  document.getElementById('overBox').innerText="Over box: "+over+" / "+digits.length+" - Last: "+last+(last>4?" (OVER 4)":" (UNDER 5)");
-  document.getElementById('matchBox').innerText="Match box: "+match+" matches in last "+digits.length+" digits";
+function clearAll(){digits=[];update();}
+function update(){
+ document.getElementById('history').innerText="History ("+digits.length+"): "+digits.slice(-30).join(" - ");
+ if(digits.length<5){document.getElementById('pred').innerText="Add "+(10-digits.length)+" more";return;}
+ // AI: Frequency in last 20 + last 50 + streak
+ let last20=digits.slice(-20);
+ let counts=[0,0,0,0,0,0,0,0,0,0];
+ last20.forEach(d=>counts[d]++);
+ let best=0; counts.forEach((c,i)=>{if(c>counts[best]) best=i;});
+ let bestPct=Math.round(counts[best]/last20.length*100);
+ // Hot digit + cold + pattern
+ let even=digits.filter(d=>d%2==0).length;
+ let odd=digits.length-even;
+ let over=digits.filter(d=>d>4).length;
+ let under=digits.length-over;
+ let evenPct=Math.round(even/digits.length*100);
+ let overPct=Math.round(over/digits.length*100);
+ // Confidence: if best digit repeats a lot = high
+ let conf = bestPct>=35 ? "HIGH 🔥" : bestPct>=25 ? "MEDIUM ⚡" : "LOW";
+ document.getElementById('pred').innerText="MATCHES: "+best;
+ document.getElementById('conf').innerText=conf+" - "+bestPct+"% in last 20";
+ document.getElementById('stats').innerText="Total: "+digits.length+" | Most Frequent: "+best+" ("+counts[best]+"x) | Even "+evenPct+"% Odd "+(100-evenPct)+"% | Over "+overPct+"% Under "+(100-overPct)+"%";
+ document.getElementById('matchesBox').innerText="🎯 MATCHES AI: Play Digit "+best+" | Confidence "+conf+" | Reason: Digit "+best+" appeared "+counts[best]+" times in last 20 digits. If pattern continues, it is most likely to repeat.";
+ document.getElementById('otherBox').innerText="Even: "+evenPct+"% | Odd: "+(100-evenPct)+"% | Over 4: "+overPct+"% | Under 5: "+(100-overPct)+"% - Play the higher %";
 }
-function analyze(){
-  if(digits.length<10){alert("Wait for digits to load - still connecting");return;}
-  let last=digits[digits.length-1];
-  let even=digits.filter(x=>x%2==0).length;
-  let txt="Last Digit: "+last+"\n";
-  if(currentTab=='Even')txt+= (even>digits.length/2?"Prediction: EVEN - "+Math.round(even/digits.length*100)+"%":"Prediction: ODD");
-  if(currentTab=='Over')txt+= (last>4?"Prediction: OVER":"Prediction: UNDER");
-  if(currentTab=='Matches')txt+="Matches in history: Check pattern";
-  document.getElementById('pred').innerText=txt;
-  updateBoxes();
-}
-connect();
 </script>
 </body>
 </html>
