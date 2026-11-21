@@ -67,7 +67,7 @@ function connect(){
     if(d.error){setStatus("Deriv error: "+d.error.message);}
   };
   ws.onerror=()=>{setStatus("Server "+(tryIndex+1)+" failed, trying next...");};
-  ws.onclose=()=>{tryIndex++;if(tryIndex<3){setTimeout(connect,1000);}else{setStatus("All failed - retrying in 5s...");setTimeout(()=>{tryIndex=0;connect();},5000);}};
+  ws.onclose=()=>{tryIndex++;if(tryIndex<3){setTimeout(connect,2000);}else{setStatus("All failed - retrying in 5s...");setTimeout(()=>{tryIndex=0;connect();},5000);}};
 }
 document.getElementById('symbol').addEventListener('change',()=>{digits=[];tryIndex=0;if(ws)ws.close();connect();});
 function updateBoxes(){
