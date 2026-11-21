@@ -1,210 +1,61 @@
 <!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Master Entries Style - Deriv Live</title>
-<style>
-body{background:#111;color:#fff;font-family:Arial;text-align:center;padding:12px}
-button{background:#00c853;color:#fff;border:none;padding:11px 14px;font-size:14px;border-radius:10px;margin:4px}
-button.active{background:#ff3d00}
-select,input{padding:10px;font-size:16px;border-radius:8px;width:100%;margin:6px 0;background:#222;color:#fff;border:1px solid #444}
-.big{font-size:38px;font-weight:bold}
-.box{background:#222;padding:14px;border-radius:12px;margin-top:10px}
-.hot{color:#00e676;font-size:28px;font-weight:bold}
-.hot2{color:#ffcc00;font-size:20px;font-weight:bold}
-td{padding:7px;border:1px solid #444}
-.tab{padding:10px;background:#333;border-radius:8px;display:inline-block;margin:3px;cursor:pointer}
-.tab.active{background:#ff3d00}
-#status{font-size:13px;padding:8px;border-radius:8px}
-</style>
-</head>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MASTER ENTRIES STYLE - Deriv Live</title>
+<style>body{background:#111;color:#fff;font-family:Arial;text-align:center;padding:15px}select,input,button{padding:12px;margin:6px;border-radius:10px;border:none;font-size:16px}button{background:#00c853;color:#fff;font-weight:bold}button:active{transform:scale(.97)}.box{background:#222;padding:15px;border-radius:15px;margin:12px 0}.price{font-size:36px;font-weight:bold;color:#00e676}.red{background:#c62828;padding:12px;border-radius:10px}.green{background:#2e7d32;padding:12px;border-radius:10px}.card{background:#333;padding:10px;margin:8px 0;border-radius:10px;text-align:left}</style></head>
 <body>
-<h2>🔴 MASTER ENTRIES STYLE</h2>
-<p>Deriv Live Auto Analyzer</p>
-
-<div id="status" style="background:#333">Status: Not Connected - Press START LIVE</div>
-
-<label>Select Index:</label>
-<select id="symbol" onchange="changeSymbol()">
-<option value="R_100">Volatility 100 (1s) Index - Master Entries</option>
-<option value="R_25">Volatility 25 (1s) Index</option>
-<option value="R_75">Volatility 75 (1s) Index</option>
-<option value="R_50">Volatility 50 (1s) Index</option>
-<option value="R_10">Volatility 10 (1s) Index</option>
-</select>
-
-<div class="box">
-<div>Current Price LIVE:</div>
-<div class="big" id="price">---</div>
-<div>Last Digit: <span id="last">-</span> | Index: <span id="idx">R_100</span></div>
-</div>
-
-<button onclick="start()">▶ START LIVE</button>
-<button onclick="clearAll()">🗑 CLEAR</button>
+<h2>🔴 MASTER ENTRIES STYLE</h2><p>Deriv Live Auto Analyzer</p>
+<div id="st" class="red">Status: Ready - Press START LIVE</div>
+<label>Select Index:</label><br>
+<select id="sym"><option value="R_100">Volatility 100 (1s) Index</option><option value="R_75">Volatility 75 (1s) Index</option><option value="R_50">Volatility 50 (1s) Index</option><option value="R_25">Volatility 25 (1s) Index</option><option value="R_10">Volatility 10 (1s) Index</option><option value="1HZ100V">Volatility 100 (1s) - 1HZ100V</option></select>
+<div class="box"><div>Current Price LIVE:</div><div class="price" id="price">---</div><div id="last">Last Digit: - | Index: R_100</div></div>
+<button onclick="startLive()">▶ START LIVE</button>
+<button onclick="clearAll()">🗑 CLEAR</button><br>
 <button onclick="toggleManual()">✍️ MANUAL MODE</button>
-
-<div id="manualBox" class="box" style="display:none">
-<p><b>Manual Mode - If LIVE fails, type digits here:</b></p>
-<input type="number" id="manualDigit" placeholder="Type 1 digit 0-9" min="0" max="9">
-<button onclick="addManual()">ADD DIGIT +</button>
-<p style="font-size:12px;color:#aaa">This is your OLD Matches backup. Works even without internet to Deriv.</p>
-</div>
-
-<div style="margin-top:12px">
-<div class="tab active" id="tabMatches" onclick="setStrategy('matches')">MATCHES</div>
-<div class="tab" id="tabEvenOdd" onclick="setStrategy('evenodd')">EVEN / ODD</div>
-<div class="tab" id="tabOverUnder" onclick="setStrategy('overunder')">OVER / UNDER</div>
-</div>
-
-<div class="box">
-<div id="stratTitle">PREDICTION FOR MATCHES:</div>
-<div class="hot" id="pred">Press START LIVE, wait 20 ticks...</div>
-<div class="hot2" id="pred2"></div>
-<div id="count">Ticks collected: 0 / 100</div>
-<div id="advice" style="font-size:13px;color:#ffcc00;margin-top:6px"></div>
-</div>
-
-<div class="box" id="table"></div>
-<div class="box" id="allStats"></div>
-
-<p style="font-size:12px;color:#aaa">⚠️ Digits are random. This only shows what came MOST in last 100 ticks. Use Demo only. Stake $0.35, Duration 5 ticks, Profit $10, Loss $10. If LIVE fails, use MANUAL MODE and go back to Matches.</p>
-
+<div class="box" id="manualBox" style="display:none"><b>Manual Mode - Type digits here:</b><br><input id="digIn" type="number" placeholder="Type 1 digit 0-9"><br><button onclick="addDigit()">ADD DIGIT +</button></div>
+<div class="box"><b>Analysis - Last 20 Digits:</b><div id="hist">No digits yet</div></div>
+<div id="signals"></div>
+<div style="font-size:12px;opacity:.7">Works even without internet to Deriv - Use Manual Mode backup.</div>
 <script>
-let digits = [];
-let ws;
-let currentSymbol = 'R_100';
-let strategy = 'matches';
-let reconnectTries = 0;
-
-function setStrategy(s){
-  strategy = s;
-  document.getElementById('tabMatches').className = 'tab' + (s==='matches'?' active':'');
-  document.getElementById('tabEvenOdd').className = 'tab' + (s==='evenodd'?' active':'');
-  document.getElementById('tabOverUnder').className = 'tab' + (s==='overunder'?' active':'');
-  document.getElementById('stratTitle').innerText = s==='matches' ? 'PREDICTION FOR MATCHES:' : s==='evenodd' ? 'PREDICTION FOR EVEN / ODD:' : 'PREDICTION FOR OVER / UNDER:';
-  update();
-}
-function changeSymbol(){
-  currentSymbol = document.getElementById('symbol').value;
-  document.getElementById('idx').innerText = currentSymbol;
-  clearAll();
-  start();
-}
-function toggleManual(){
-  let b = document.getElementById('manualBox');
-  b.style.display = b.style.display==='none' ? 'block' : 'none';
-}
-function addManual(){
-  let v = document.getElementById('manualDigit').value;
-  if(v==='' || v<0 || v>9){ alert('Type 0-9 only'); return; }
-  digits.push(parseInt(v));
-  if(digits.length>100) digits.shift();
-  document.getElementById('manualDigit').value='';
-  update();
-  document.getElementById('status').innerText = 'Status: MANUAL MODE - ' + digits.length + ' digits typed';
-  document.getElementById('status').style.background = '#ff9800';
-}
-function start(){
-  document.getElementById('status').innerText = 'Status: Connecting to Deriv Live... ' + currentSymbol;
-  document.getElementById('status').style.background = '#333';
-  if(ws) ws.close();
-  try{
-    ws = new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=1089');
-  }catch(e){ failConnect(); return; }
-  ws.onopen = () => {
-    reconnectTries = 0;
-    document.getElementById('status').innerText = 'Status: ✅ CONNECTED LIVE - ' + currentSymbol;
-    document.getElementById('status').style.background = '#00c853';
-    ws.send(JSON.stringify({ticks: currentSymbol}));
+let ws=null,digits=[],tryIdx=0;
+const servers=["wss://ws.derivws.com/websockets/v3?app_id=1089","wss://ws.binaryws.com/websockets/v3?app_id=1089","wss://ws.deriv.com/websockets/v3?app_id=1089"];
+function setSt(t,ok){let e=document.getElementById('st');e.textContent='Status: '+t;e.className=ok?'green':'red';}
+function startLive(){
+  if(ws) try{ws.close()}catch(e){}
+  let url=servers[tryIdx%servers.length];
+  setSt('Connecting to '+url+' ... Try '+(tryIdx+1),false);
+  try{ws=new WebSocket(url)}catch(e){tryNext();return;}
+  ws.onopen=()=>{
+    setSt('✅ CONNECTED LIVE!',true);
+    let s=document.getElementById('sym').value;
+    ws.send(JSON.stringify({ticks:s,subscribe:1}));
   };
-  ws.onerror = () => { failConnect(); };
-  ws.onclose = () => {
-    if(digits.length < 5) failConnect();
+  ws.onmessage=(m)=>{
+    try{let d=JSON.parse(m.data);if(d.tick){let q=d.tick.quote.toString();let lastDigit=parseInt(q.slice(-1));document.getElementById('price').textContent=q;document.getElementById('last').textContent='Last Digit: '+lastDigit+' | Index: '+d.tick.symbol;addToHistory(lastDigit);}}catch(e){}
   };
-  ws.onmessage = (msg) => {
-    let d = JSON.parse(msg.data);
-    if(d.tick){
-      let price = d.tick.quote.toString();
-      let lastDigit = price.slice(-1);
-      document.getElementById('price').innerText = price;
-      document.getElementById('last').innerText = lastDigit;
-      digits.push(parseInt(lastDigit));
-      if(digits.length > 100) digits.shift();
-      update();
-    }
-    if(d.error){
-      failConnect();
-    }
-  };
-  // If no tick in 8 seconds, show fail
-  setTimeout(()=>{
-    if(digits.length===0 && document.getElementById('status').innerText.includes('Connecting')){
-      failConnect();
-    }
-  }, 8000);
+  ws.onerror=()=>{tryNext();};
+  ws.onclose=()=>{if(digits.length==0) tryNext();};
 }
-function failConnect(){
-  document.getElementById('status').innerText = 'Status: ❌ FAILED TO CONNECT TO DERIV LIVE - Switched to MANUAL MODE / MATCHES Backup. Press MANUAL MODE and type digits.';
-  document.getElementById('status').style.background = '#d50000';
-  document.getElementById('manualBox').style.display = 'block';
-  // Auto go back to Matches like you said
-  setStrategy('matches');
+function tryNext(){tryIdx++;if(tryIdx<9){setTimeout(startLive,1500)}else{setSt('❌ FAILED - Check Internet / Try MANUAL MODE. Press START again.',false)}}
+function addToHistory(d){digits.push(d);if(digits.length>50)digits.shift();render();}
+function addDigit(){let v=document.getElementById('digIn').value;if(v===''||v<0||v>9)return alert('Type 0-9');addToHistory(parseInt(v));document.getElementById('digIn').value='';}
+function toggleManual(){let b=document.getElementById('manualBox');b.style.display=b.style.display==='none'?'block':'none';}
+function clearAll(){digits=[];render();document.getElementById('signals').innerHTML='';}
+function render(){
+  document.getElementById('hist').textContent=digits.slice(-20).join(' - ')||'No digits yet';
+  if(digits.length<5)return;
+  let last20=digits.slice(-20);
+  let counts=[0,0,0,0,0,0,0,0,0,0];last20.forEach(d=>counts[d]++);
+  let even=last20.filter(d=>d%2==0).length, odd=last20.length-even;
+  let html='';
+  // Master Entries logic: Hot / Cold + Even/Odd + Over/Under
+  let maxD=counts.indexOf(Math.max(...counts)), minD=counts.indexOf(Math.min(...counts));
+  html+='<div class="card"><b>🔥 HOT Digit:</b> '+maxD+' appeared '+counts[maxD]+'x in last 20</div>';
+  html+='<div class="card"><b>❄️ COLD Digit:</b> '+minD+' appeared '+counts[minD]+'x</div>';
+  html+='<div class="card"><b>⚖️ Even/Odd:</b> Even '+even+' | Odd '+odd+' - '+(even>odd+3?'Bet ODD next - Even over':odd>even+3?'Bet EVEN next - Odd over':'Balanced - Wait')+'</div>';
+  let over=last20.filter(d=>d>=5).length, under=last20.filter(d=>d<5).length;
+  html+='<div class="card"><b>📊 Over 4 / Under 5:</b> Over '+over+' | Under '+under+' - '+(over>under+3?'Bet UNDER 5 next':under>over+3?'Bet OVER 4 next':'Wait')+'</div>';
+  html+='<div class="card"><b>🎯 MASTER ENTRY:</b> Last digit '+digits[digits.length-1]+' | Next likely: '+(even>odd?'ODD':'EVEN')+' / '+(over>under?'UNDER 5':'OVER 4')+'</div>';
+  document.getElementById('signals').innerHTML='<div class="box">'+html+'</div>';
 }
-function update(){
-  let counts = [0,0,0,0,0,0,0,0,0,0];
-  digits.forEach(n => counts[n]++);
-  let max = Math.max(...counts);
-  let hot = counts.indexOf(max);
-  document.getElementById('count').innerText = 'Ticks collected: ' + digits.length + ' / 100';
-
-  let even = counts[0]+counts[2]+counts[4]+counts[6]+counts[8];
-  let odd = digits.length - even;
-  let over = counts[5]+counts[6]+counts[7]+counts[8]+counts[9];
-  let under = digits.length - over;
-
-  if(digits.length >= 20){
-    if(strategy==='matches'){
-      let pct = Math.round(max/digits.length*100);
-      document.getElementById('pred').innerText = 'Digit ' + hot + ' - ' + pct + '%';
-      document.getElementById('pred2').innerText = 'In Deriv Automate: Matches | Digit ' + hot + ' | Duration 5 ticks';
-      document.getElementById('advice').innerText = pct>=20 ? '✅ Strong: '+pct+'% is high. Try 1 run only.' : '⚠️ Weak: All digits similar. WAIT, do NOT trade.';
-    } else if(strategy==='evenodd'){
-      let winner = even>odd ? 'EVEN' : 'ODD';
-      let wpct = Math.round(Math.max(even,odd)/digits.length*100);
-      document.getElementById('pred').innerText = winner + ' - ' + wpct + '%';
-      document.getElementById('pred2').innerText = 'In Deriv Automate: Even/Odd | Choose ' + winner + ' | Duration 5 ticks';
-      document.getElementById('advice').innerText = wpct>=60 ? '✅ Strong Even/Odd signal' : '⚠️ Weak, WAIT';
-    } else {
-      let winner = over>under ? 'OVER 4' : 'UNDER 5';
-      let wpct = Math.round(Math.max(over,under)/digits.length*100);
-      document.getElementById('pred').innerText = winner + ' - ' + wpct + '%';
-      document.getElementById('pred2').innerText = 'In Deriv Automate: Over/Under | Choose ' + winner + ' | Duration 5 ticks';
-      document.getElementById('advice').innerText = wpct>=60 ? '✅ Strong Over/Under signal' : '⚠️ Weak, WAIT';
-    }
-  }
-
-  let html = '<b>Last 100 Digits Breakdown</b><table width="100%"><tr><th>Digit</th><th>Count</th><th>%</th></tr>';
-  for(let i=0;i<10;i++){
-    let bg = (i===hot && digits.length>=20) ? ' style="background:#00c853"' : '';
-    html += '<tr'+bg+'><td>'+i+'</td><td>'+counts[i]+'</td><td>'+Math.round(counts[i]/Math.max(1,digits.length)*100)+'%</td></tr>';
-  }
-  html += '</table><p>Last 20: ' + digits.slice(-20).join(' - ') + '</p>';
-  document.getElementById('table').innerHTML = html;
-
-  document.getElementById('allStats').innerHTML = '<b>ALL 3 STRATEGIES AT ONCE (Master Entries Style)</b><br>' +
-    '🎯 Matches: Digit <b>' + hot + '</b> (' + Math.round(max/Math.max(1,digits.length)*100) + '%)<br>' +
-    '⚖️ Even/Odd: EVEN ' + Math.round(even/Math.max(1,digits.length)*100) + '% vs ODD ' + Math.round(odd/Math.max(1,digits.length)*100) + '%<br>' +
-    '📈 Over/Under: OVER 4 ' + Math.round(over/Math.max(1,digits.length)*100) + '% vs UNDER 5 ' + Math.round(under/Math.max(1,digits.length)*100) + '%';
-}
-function clearAll(){
-  digits = [];
-  document.getElementById('pred').innerText = 'Cleared - Wait for 20 ticks...';
-  document.getElementById('pred2').innerText = '';
-  document.getElementById('table').innerHTML = '';
-  document.getElementById('allStats').innerHTML = '';
-  document.getElementById('advice').innerText = '';
-  document.getElementById('count').innerText = 'Ticks collected: 0 / 100';
-}
-</script>
-</body>
-</html>
+document.getElementById('sym').onchange=()=>{if(ws&&ws.readyState==1){ws.send(JSON.stringify({forget_all:'ticks'}));ws.send(JSON.stringify({ticks:document.getElementById('sym').value,subscribe:1}));clearAll();}};
+</script></body></html>
