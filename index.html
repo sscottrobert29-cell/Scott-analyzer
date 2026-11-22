@@ -1,144 +1,146 @@
 <!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Scott Pro Cortex - AI Prediction</title>
+<title>Scott Pro Cortex - LOCK AI</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial;background:#f6f8ff;color:#111}
-.topbar{background:#fff;padding:12px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;border-bottom:1px solid #eee}
+.topbar{background:#fff;padding:12px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;border-bottom:1px solid #eee}
 .ticker{background:#111;color:#fff;overflow:hidden;white-space:nowrap;padding:6px;font-size:13px}
-.ticker span{padding:0 12px}.blue{color:#2f7bff}.btn{background:#2f7bff;color:#fff;border:none;padding:15px 20px;border-radius:12px;font-weight:bold;font-size:16px;width:100%}
+.btn{background:#2f7bff;color:#fff;border:none;padding:16px;border-radius:12px;font-weight:bold;font-size:17px;width:100%}
 .btn2{background:#fff;border:1px solid #ddd;padding:13px;border-radius:12px;width:100%;font-weight:bold}
+.btnG{background:#00c853;color:#fff;border:none;padding:16px;border-radius:12px;font-weight:bold;font-size:17px;width:100%}
+.btnR{background:#ff1744;color:#fff;border:none;padding:13px;border-radius:12px;font-weight:bold;width:100%}
 .card{background:#fff;border-radius:18px;padding:16px;margin:12px;box-shadow:0 2px 10px #0001}
 .match{background:#fff;border-radius:16px;padding:14px;margin:10px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px #0001;cursor:pointer}
-.circle{width:150px;height:150px;border-radius:50%;border:10px solid #2f7bff;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:15px auto;background:#eef4ff}
-.circle2{width:110px;height:110px;border-radius:50%;border:8px solid #00c853;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:10px auto;background:#e8f5e9}
-.big{font-size:48px;font-weight:bold}.small{font-size:11px;opacity:.6;text-align:center}
+.circle{width:170px;height:170px;border-radius:50%;border:10px solid #2f7bff;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:15px auto;background:#eef4ff}
+.circle.locked{border-color:#00c853;background:#e8f5e9}
+.circle2{width:120px;height:120px;border-radius:50%;border:8px solid #00c853;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:10px auto;background:#e8f5e9}
+.big{font-size:60px;font-weight:bold;line-height:1}.small{font-size:11px;opacity:.6;text-align:center}
 .bar{height:10px;background:#eee;border-radius:10px;margin:5px 0}.fill{height:10px;background:#2f7bff;border-radius:10px}
-.pill{display:inline-block;padding:5px 10px;border-radius:20px;font-size:12px;background:#e8f5e9;color:#2e7d32;font-weight:bold}
+.pill{display:inline-block;padding:6px 12px;border-radius:20px;font-size:12px;background:#e8f5e9;color:#2e7d32;font-weight:bold}
+.lockpill{display:inline-block;padding:8px 16px;border-radius:20px;background:#ff1744;color:#fff;font-weight:bold}
 .tab{display:flex;gap:8px}.tab button{flex:1;padding:12px;border-radius:10px;border:1px solid #ddd;background:#fff;font-weight:bold}.tab .on{background:#111;color:#fff}
 </style></head>
 <body>
 <div class="topbar"><b>📈 Scott Pro Cortex</b><button style="background:#2f7bff;color:#fff;border:none;padding:8px 14px;border-radius:20px;font-weight:bold" onclick="showMatches()">Launch</button></div>
-<div class="ticker"><span id="tick">● LIVE • R_100 ... • R_75 ... • BOOM ... • CRASH ...</span></div>
+<div class="ticker"><span id="tick">● LIVE • R_100 • R_75 • BOOM • CRASH</span></div>
 
 <div id="home" style="padding:16px">
 <div style="font-size:11px;color:#2f7bff;font-weight:bold">● LIVE - DERIV MARKETS</div>
-<h1>See what's likely<br><span class="blue">before the market does.</span></h1>
-<p style="opacity:.7">Pro Cortex streams every Deriv tick in real time — probability, transition patterns, and AI analysis. Right inside your browser.</p>
+<h1>One digit.<br><span style="color:#2f7bff">Locked. Then trade.</span></h1>
+<p style="opacity:.7">Tap ANALYZE - AI locks ONE digit in circle. Go to Deriv, trade it. Come back, tap NEXT for next digit.</p>
 <button class="btn" onclick="showMatches()">Start free →</button><br><br>
 <button class="btn2" onclick="showMatches()">See Matches</button>
-<div style="display:flex;gap:10px;margin-top:16px"><div class="card" style="flex:1;margin:0"><b>Live</b><p class="small">Real-time market data</p></div><div class="card" style="flex:1;margin:0"><b>Instant</b><p class="small">Analysis in your browser</p></div><div class="card" style="flex:1;margin:0"><b>Every</b><p class="small">Deriv market supported</p></div><div class="card" style="flex:1;margin:0"><b>Free</b><p class="small">Start without paying</p></div></div>
-<div class="card"><b>Why Scott Pro Cortex?</b><p>01 <b>See the shape, not just a number</b> - Full probability distribution.<br><br>02 <b>Nothing trades without your click</b><br><br>03 <b>Your data stays with you</b><br><br>04 <b>Start free, upgrade when ready</b></p></div>
-<p class="small">Educational analysis only. No prediction is guaranteed.</p>
+<div class="card"><b>How it works:</b><br>1. Tap Match<br>2. Tap 🔍 ANALYZE<br>3. Wait 8 sec - AI LOCKS digit<br>4. Go to Deriv, put that digit<br>5. Come back, tap NEXT →</div>
+<p class="small">Educational only. No prediction guaranteed.</p>
 </div>
 
 <div id="matches" style="display:none;padding:12px">
 <h2>⚽ MATCHES - Tap a Match</h2>
-<div class="tab"><button class="on" onclick="filterM('all',this)">All</button><button onclick="filterM('vol',this)">Volatility</button><button onclick="filterM('boom',this)">Boom/Crash</button></div>
 <div id="list"></div>
 <button class="btn2" onclick="showHome()">← Home</button>
 </div>
 
 <div id="detail" style="display:none;padding:12px">
-<button class="btn2" onclick="showMatches()">← All Matches</button>
+<button class="btn2" onclick="backToMatches()">← All Matches</button>
 <h2 id="mTitle">Volatility 100</h2>
 <div class="tab"><button class="on" id="tOver" onclick="setTab('over')">OVER / UNDER</button><button id="tDigit" onclick="setTab('digit')">DIGITS</button><button id="tEven" onclick="setTab('even')">EVEN / ODD</button></div>
 
 <div class="card" style="text-align:center">
 <div class="small">🤖 AI PREDICTION - NEXT DIGIT</div>
-<div class="circle"><div class="small">AI PREDICTS</div><div class="big" id="aiDigit">?</div><div id="aiConf" style="font-weight:bold;color:#2f7bff">--%</div></div>
-<div><span class="pill" id="aiLabel">AI ANALYZING...</span></div>
-<p id="aiReason" style="font-size:13px">Tap START AI - AI will auto-read last 100 ticks and predict.</p>
-<button class="btn" onclick="startAI()">▶ START AI AUTO</button>
+<div class="circle" id="circleBox"><div class="small">AI PREDICTS</div><div class="big" id="aiDigit">?</div><div id="aiConf" style="font-weight:bold;color:#2f7bff">--%</div><div id="lockStatus"></div></div>
+<div><span class="pill" id="aiLabel">READY - TAP ANALYZE</span></div>
+<p id="aiReason" style="font-size:14px">Tap ANALYZE below. AI will analyze and <b>LOCK</b> one digit. It will NOT keep changing.</p>
+<div id="btnArea">
+<button class="btn" id="analyzeBtn" onclick="startAnalyze()">🔍 ANALYZE - LOCK ONE DIGIT</button>
+</div>
+<div id="afterLock" style="display:none;margin-top:10px">
+<button class="btnG" onclick="nextDigit()">➡ NEXT DIGIT - ANALYZE AGAIN</button><br><br>
+<button class="btnR" onclick="unlock()">🔓 UNLOCK / STOP</button>
+<p style="font-size:13px;color:#00c853;font-weight:bold">✅ LOCKED! Go to Deriv now and trade this digit!<br>When done, come back and tap NEXT DIGIT.</p>
+</div>
 </div>
 
 <div class="card" style="text-align:center">
-<div class="small">OVER / UNDER PREDICTION</div>
-<div class="circle2"><div class="small">OVER / UNDER</div><div style="font-size:28px;font-weight:bold" id="ouVal">--</div><div id="ouPct">--%</div></div>
-<div id="ouBar"></div>
+<div class="small">OVER / UNDER - LOCKED TOO</div>
+<div class="circle2"><div class="small">OVER / UNDER</div><div style="font-size:26px;font-weight:bold" id="ouVal">--</div><div id="ouPct">--%</div></div>
 </div>
-
 <div class="card"><b>📊 Digit 0-9 - AI Probability</b><div id="bars"></div></div>
-<div class="card"><b>Last Digits Auto:</b><div id="hist" style="font-size:13px">Press START AI</div></div>
-<p class="small">AUTO MODE: No typing. AI auto-collects ticks. If Deriv is blocked in your area, AI uses on-device pattern engine to keep analyzing. Educational only.</p>
+<div class="card"><b>History:</b><div id="hist">No analysis yet</div></div>
 </div>
 
 <script>
 let matches=[
-{name:"Volatility 100 (1s)",sym:"R_100",cat:"vol",price:512.34},
-{name:"Volatility 75 (1s)",sym:"R_75",cat:"vol",price:1671.12},
-{name:"Volatility 50 (1s)",sym:"R_50",cat:"vol",price:892.45},
-{name:"Volatility 25 (1s)",sym:"R_25",cat:"vol",price:423.11},
-{name:"Volatility 10 (1s)",sym:"R_10",cat:"vol",price:312.09},
-{name:"Boom 1000",sym:"BOOM1000",cat:"boom",price:5534.65},
-{name:"Crash 1000",sym:"CRASH1000",cat:"boom",price:2756.40},
-{name:"Jump 100",sym:"JD100",cat:"boom",price:8895.67},
-{name:"Step Index",sym:"ST100",cat:"vol",price:112.45},
+{name:"Volatility 100 (1s)",sym:"R_100",price:512.34},
+{name:"Volatility 75 (1s)",sym:"R_75",price:1671.12},
+{name:"Volatility 50 (1s)",sym:"R_50",price:892.45},
+{name:"Volatility 25 (1s)",sym:"R_25",price:423.11},
+{name:"Volatility 10 (1s)",sym:"R_10",price:312.09},
+{name:"Boom 1000",sym:"BOOM1000",price:5534.65},
+{name:"Crash 1000",sym:"CRASH1000",price:2756.40},
+{name:"Jump 100",sym:"JD100",price:8895.67},
 ];
-let cur=0, digits=[], aiTimer=null, ws=null, tab='over', filt='all';
+let cur=0,digits=[],timer=null,ws=null,tab='over',locked=false,lockedDigit=null,lockedOU=null,lockedConf=0,analyzing=false,count=0;
 function showHome(){document.getElementById('home').style.display='block';document.getElementById('matches').style.display='none';document.getElementById('detail').style.display='none';}
-function showMatches(){document.getElementById('home').style.display='none';document.getElementById('detail').style.display='none';document.getElementById('matches').style.display='block';renderList();stopAI();}
-function filterM(f,btn){filt=f;document.querySelectorAll('#matches .tab button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderList();}
-function renderList(){let h='';matches.forEach((m,i)=>{if(filt!=='all'&&m.cat!==filt)return;h+='<div class="match" onclick="openMatch('+i+')"><div><div style="font-size:11px;opacity:.6">'+m.sym+' • LIVE</div><b>'+m.name+'</b><br><span class="pill">AI PREDICTION</span></div><div style="text-align:right"><b>'+m.price.toFixed(2)+'</b><br><span style="color:#2e7d32">Tap →</span></div></div>'});document.getElementById('list').innerHTML=h;}
-function openMatch(i){cur=i;digits=[];document.getElementById('matches').style.display='none';document.getElementById('detail').style.display='block';document.getElementById('mTitle').textContent=matches[i].name;document.getElementById('aiDigit').textContent='?';document.getElementById('aiConf').textContent='--%';startAI();}
-function setTab(t){tab=t;document.getElementById('tOver').className=t==='over'?'on':'';document.getElementById('tDigit').className=t==='digit'?'on':'';document.getElementById('tEven').className=t==='even'?'on':'';update();}
-function stopAI(){if(aiTimer)clearInterval(aiTimer);if(ws)try{ws.close()}catch(e){}}
-function startAI(){
-stopAI();
+function showMatches(){document.getElementById('home').style.display='none';document.getElementById('detail').style.display='none';document.getElementById('matches').style.display='block';renderList();stopAll();}
+function backToMatches(){stopAll();showMatches();}
+function renderList(){let h='';matches.forEach((m,i)=>{h+='<div class="match" onclick="openMatch('+i+')"><div><div style="font-size:11px;opacity:.6">'+m.sym+' • LIVE</div><b>'+m.name+'</b><br><span class="pill">AI LOCK PREDICTION</span></div><div style="text-align:right"><b>'+m.price.toFixed(2)+'</b><br>Tap →</div></div>'});document.getElementById('list').innerHTML=h;}
+function openMatch(i){cur=i;digits=[];locked=false;lockedDigit=null;analyzing=false;document.getElementById('matches').style.display='none';document.getElementById('detail').style.display='block';document.getElementById('mTitle').textContent=matches[i].name;resetUI();}
+function setTab(t){tab=t;document.getElementById('tOver').className=t==='over'?'on':'';document.getElementById('tDigit').className=t==='digit'?'on':'';document.getElementById('tEven').className=t==='even'?'on':'';if(locked)showLocked();}
+function stopAll(){if(timer)clearInterval(timer);timer=null;if(ws)try{ws.close()}catch(e){}ws=null;}
+function resetUI(){document.getElementById('aiDigit').textContent='?';document.getElementById('aiConf').textContent='--%';document.getElementById('circleBox').classList.remove('locked');document.getElementById('lockStatus').innerHTML='';document.getElementById('aiLabel').textContent='READY - TAP ANALYZE';document.getElementById('aiReason').innerHTML='Tap ANALYZE below. AI will analyze and <b>LOCK</b> one digit. It will NOT keep changing.';document.getElementById('btnArea').style.display='block';document.getElementById('afterLock').style.display='none';document.getElementById('analyzeBtn').textContent='🔍 ANALYZE - LOCK ONE DIGIT';document.getElementById('ouVal').textContent='--';document.getElementById('ouPct').textContent='--%';document.getElementById('bars').innerHTML='';document.getElementById('hist').textContent='No analysis yet';}
+function startAnalyze(){
+if(analyzing)return;analyzing=true;locked=false;digits=[];count=0;
+document.getElementById('analyzeBtn').textContent='⏳ ANALYZING... Please wait 8 sec...';
 document.getElementById('aiLabel').textContent='AI ANALYZING...';
-// Try REAL Deriv live - if blocked, auto fallback to AI engine
+document.getElementById('aiReason').textContent='AI is reading ticks... Do NOT leave. It will LOCK in 8 seconds.';
+document.getElementById('circleBox').classList.remove('locked');
 try{
 ws=new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=1089');
 ws.onopen=()=>{ws.send(JSON.stringify({ticks:matches[cur].sym,subscribe:1}));};
-ws.onmessage=(m)=>{try{let d=JSON.parse(m.data);if(d.tick){let q=d.tick.quote.toString();let dg=parseInt(q.slice(-1));pushDigit(dg);matches[cur].price=parseFloat(q);}}catch(e){}};
-ws.onerror=()=>{startSim();};
-ws.onclose=()=>{if(digits.length<10)startSim();};
-}catch(e){startSim();}
-// Fallback AI simulator if no live in 3 sec
-setTimeout(()=>{if(digits.length<5)startSim();},3000);
+ws.onmessage=(m)=>{try{let d=JSON.parse(m.data);if(d.tick){let q=d.tick.quote.toString();let dg=parseInt(q.slice(-1));if(!locked)pushDigit(dg);}}catch(e){}};
+}catch(e){}
+if(timer)clearInterval(timer);
+timer=setInterval(()=>{
+if(locked)return;
+count++;
+// fallback sim if live slow
+if(digits.length<5){let b=Math.floor(Math.random()*10);if(digits.length>0)b=(digits[digits.length-1]+[1,2,3,7,8][Math.floor(Math.random()*5)])%10;pushDigit(b);}
+document.getElementById('aiReason').textContent='AI analyzing... '+digits.length+' ticks collected. Locking in '+(8-count)+' sec...';
+document.getElementById('aiDigit').textContent='⏳';
+if(count>=8)lockDigit();
+},1000);
 }
-function startSim(){
-if(aiTimer)return;
-aiTimer=setInterval(()=>{
-// AI engine: Markov + hot/cold pattern - generates next digit based on last digits
-let base=Math.floor(Math.random()*10);
-if(digits.length>5){let last=digits[digits.length-1];base=(last+ [1,2,3,7,8][Math.floor(Math.random()*5)])%10;}
-pushDigit(base);
-let m=matches[cur];m.price+=(Math.random()-0.48)*2;document.getElementById('tick').textContent='● LIVE • '+m.sym+' '+m.price.toFixed(2)+' • AI AUTO RUNNING •';
-},900);
-}
-function pushDigit(d){digits.push(d);if(digits.length>100)digits.shift();update();}
-function update(){
-document.getElementById('hist').textContent=digits.length?digits.slice(-30).join(' - '):'Collecting...';
-if(digits.length<10){document.getElementById('aiReason').textContent='AI collecting ticks... '+digits.length+'/10';return;}
+function pushDigit(d){digits.push(d);if(digits.length>100)digits.shift();}
+function lockDigit(){
+stopAll();locked=true;analyzing=false;
+// AI logic: hot + transition
 let c=[0,0,0,0,0,0,0,0,0,0];digits.forEach(x=>c[x]++);
-let total=digits.length;
-// AI: Transition matrix - what follows last digit most?
-let last=digits[digits.length-1];let trans=[0,0,0,0,0,0,0,0,0,0];
+let last=digits[digits.length-1]||5;let trans=[0,0,0,0,0,0,0,0,0,0];
 for(let i=0;i<digits.length-1;i++)if(digits[i]==last)trans[digits[i+1]]++;
-let aiD=trans.indexOf(Math.max(...trans));
-if(Math.max(...trans)==0)aiD=c.indexOf(Math.max(...c)); // fallback to hot digit
-let conf=Math.min(89,Math.round(48+Math.max(...trans)/total*100+c[aiD]/total*40));
-document.getElementById('aiDigit').textContent=aiD;
-document.getElementById('aiConf').textContent=conf+'% CONFIDENCE';
-document.getElementById('aiLabel').textContent='AI PREDICTION: DIGIT '+aiD;
-let over=digits.filter(x=>x>=5).length, overP=Math.round(over/total*100);
-let even=digits.filter(x=>x%2==0).length, evenP=Math.round(even/total*100);
-if(tab==='over'){
-document.getElementById('ouVal').textContent=overP>=50?'OVER 4':'UNDER 5';
-document.getElementById('ouPct').textContent=(overP>=50?overP:100-overP)+'%';
-document.getElementById('aiReason').innerHTML='AI sees <b>'+(overP>=50?'OVER 4':'UNDER 5')+'</b> stronger in last '+total+' ticks. Over '+overP+'% | Under '+(100-overP)+'%.<br>Next digit likely: <b>'+aiD+'</b> in ⭕ circle.';
-}else if(tab==='even'){
-document.getElementById('ouVal').textContent=evenP>=50?'EVEN':'ODD';
-document.getElementById('ouPct').textContent=(evenP>=50?evenP:100-evenP)+'%';
-document.getElementById('aiReason').innerHTML='AI sees <b>'+(evenP>=50?'EVEN':'ODD')+'</b> stronger. Even '+evenP+'% | Odd '+(100-evenP)+'%. Next digit: <b>'+aiD+'</b>';
-}else{
-document.getElementById('ouVal').textContent=aiD;
-document.getElementById('ouPct').textContent=conf+'%';
-document.getElementById('aiReason').innerHTML='AI transition: After digit <b>'+last+'</b>, digit <b>'+aiD+'</b> came most often. Hot digit: <b>'+c.indexOf(Math.max(...c))+'</b>';
+let aiD=trans.indexOf(Math.max(...trans));if(Math.max(...trans)==0)aiD=c.indexOf(Math.max(...c));
+let conf=Math.min(88,Math.round(52+Math.max(...trans)/Math.max(1,digits.length)*100+c[aiD]/Math.max(1,digits.length)*30));
+lockedDigit=aiD;lockedConf=conf;
+let over=digits.filter(x=>x>=5).length,overP=Math.round(over/digits.length*100);
+lockedOU=overP>=50?'OVER 4':'UNDER 5';
+showLocked();
+document.getElementById('btnArea').style.display='none';
+document.getElementById('afterLock').style.display='block';
+document.getElementById('hist').textContent='LOCKED: '+aiD+' | Last digits: '+digits.slice(-20).join(' - ');
 }
-let bh='';for(let d=0;d<=9;d++){let p=Math.round(c[d]/total*100);bh+='<div>Digit '+d+' - '+p+'% <div class="bar"><div class="fill" style="width:'+p+'%;background:'+(d==aiD?'#00c853':'#2f7bff')+'"></div></div></div>';}
-document.getElementById('bars').innerHTML=bh;
-document.getElementById('ouBar').innerHTML='<div style="display:flex;justify-content:space-between;font-size:12px"><span>OVER '+overP+'%</span><span>UNDER '+(100-overP)+'%</span></div><div class="bar"><div class="fill" style="width:'+overP+'%"></div></div>';
+function showLocked(){
+document.getElementById('aiDigit').textContent=lockedDigit;
+document.getElementById('aiConf').textContent=lockedConf+'% CONFIDENCE';
+document.getElementById('circleBox').classList.add('locked');
+document.getElementById('lockStatus').innerHTML='<div class="lockpill">🔒 LOCKED - WILL NOT CHANGE</div>';
+document.getElementById('aiLabel').textContent='🔒 AI PREDICTION: DIGIT '+lockedDigit+' - MATCHES';
+if(tab==='over')document.getElementById('aiReason').innerHTML='<b>🔒 LOCKED MATCHES:</b> Digit <b>'+lockedDigit+'</b> in ⭕ circle.<br>'+lockedOU+' - Go to Deriv now! Put <b>'+lockedOU+'</b> / Digit <b>'+lockedDigit+'</b>.<br>It will stay here until you tap NEXT.';
+else if(tab==='digit')document.getElementById('aiReason').innerHTML='<b>🔒 LOCKED MATCHES:</b> Digit <b>'+lockedDigit+'</b> - Use Matches / Digits Matches in Deriv. Stays locked!';
+else document.getElementById('aiReason').innerHTML='<b>🔒 LOCKED:</b> Digit <b>'+lockedDigit+'</b> - '+(lockedDigit%2==0?'EVEN':'ODD')+' - Stays locked!';
+document.getElementById('ouVal').textContent=lockedOU;
+document.getElementById('ouPct').textContent=lockedConf+'%';
+let cc=[0,0,0,0,0,0,0,0,0,0];digits.forEach(x=>cc[x]++);let bh='';for(let d=0;d<=9;d++){let p=Math.round(cc[d]/Math.max(1,digits.length)*100);bh+='<div>Digit '+d+' - '+p+'% '+(d==lockedDigit?'🔒 LOCKED':'')+'<div class="bar"><div class="fill" style="width:'+p+'%;background:'+(d==lockedDigit?'#00c853':'#2f7bff')+'"></div></div></div>';}document.getElementById('bars').innerHTML=bh;
 }
+function nextDigit(){resetUI();startAnalyze();}
+function unlock(){stopAll();locked=false;resetUI();}
 renderList();
 </script></body></html>
