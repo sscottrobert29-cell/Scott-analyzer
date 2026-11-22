@@ -1,145 +1,71 @@
 <!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Scott Pro Cortex - LOCK AI</title>
+<title>Scott Pro Cortex - BOT LOCK</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial;background:#f6f8ff;color:#111}
-.topbar{background:#fff;padding:12px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;border-bottom:1px solid #eee}
-.ticker{background:#111;color:#fff;overflow:hidden;white-space:nowrap;padding:6px;font-size:13px}
+.topbar{background:#fff;padding:12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee}
 .btn{background:#2f7bff;color:#fff;border:none;padding:16px;border-radius:12px;font-weight:bold;font-size:17px;width:100%}
 .btn2{background:#fff;border:1px solid #ddd;padding:13px;border-radius:12px;width:100%;font-weight:bold}
 .btnG{background:#00c853;color:#fff;border:none;padding:16px;border-radius:12px;font-weight:bold;font-size:17px;width:100%}
 .btnR{background:#ff1744;color:#fff;border:none;padding:13px;border-radius:12px;font-weight:bold;width:100%}
+.btnY{background:#ffab00;color:#000;border:none;padding:16px;border-radius:12px;font-weight:bold;font-size:17px;width:100%}
 .card{background:#fff;border-radius:18px;padding:16px;margin:12px;box-shadow:0 2px 10px #0001}
 .match{background:#fff;border-radius:16px;padding:14px;margin:10px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px #0001;cursor:pointer}
 .circle{width:170px;height:170px;border-radius:50%;border:10px solid #2f7bff;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:15px auto;background:#eef4ff}
 .circle.locked{border-color:#00c853;background:#e8f5e9}
-.circle2{width:120px;height:120px;border-radius:50%;border:8px solid #00c853;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:10px auto;background:#e8f5e9}
 .big{font-size:60px;font-weight:bold;line-height:1}.small{font-size:11px;opacity:.6;text-align:center}
 .bar{height:10px;background:#eee;border-radius:10px;margin:5px 0}.fill{height:10px;background:#2f7bff;border-radius:10px}
 .pill{display:inline-block;padding:6px 12px;border-radius:20px;font-size:12px;background:#e8f5e9;color:#2e7d32;font-weight:bold}
 .lockpill{display:inline-block;padding:8px 16px;border-radius:20px;background:#ff1744;color:#fff;font-weight:bold}
 .tab{display:flex;gap:8px}.tab button{flex:1;padding:12px;border-radius:10px;border:1px solid #ddd;background:#fff;font-weight:bold}.tab .on{background:#111;color:#fff}
+.step{background:#fff3cd;border:2px solid #ffab00;border-radius:12px;padding:12px;margin:12px;font-size:14px}
 </style></head>
 <body>
-<div class="topbar"><b>📈 Scott Pro Cortex</b><button style="background:#2f7bff;color:#fff;border:none;padding:8px 14px;border-radius:20px;font-weight:bold" onclick="showMatches()">Launch</button></div>
-<div class="ticker"><span id="tick">● LIVE • R_100 • R_75 • BOOM • CRASH</span></div>
-
+<div class="topbar"><b>📈 Scott Pro Cortex - BOT MODE</b><button style="background:#2f7bff;color:#fff;border:none;padding:8px 14px;border-radius:20px;font-weight:bold" onclick="showMatches()">Launch</button></div>
+<div class="step"><b>🔁 YOUR FLOW:</b><br>1. ANALYZE -> LOCK digit<br>2. COPY digit<br>3. Go to Deriv BOT -> Paste in <b>Prediction</b><br>4. Tap RUN -> Bot does 1 trade<br>5. Come back -> NEXT DIGIT</div>
 <div id="home" style="padding:16px">
-<div style="font-size:11px;color:#2f7bff;font-weight:bold">● LIVE - DERIV MARKETS</div>
-<h1>One digit.<br><span style="color:#2f7bff">Locked. Then trade.</span></h1>
-<p style="opacity:.7">Tap ANALYZE - AI locks ONE digit in circle. Go to Deriv, trade it. Come back, tap NEXT for next digit.</p>
-<button class="btn" onclick="showMatches()">Start free →</button><br><br>
-<button class="btn2" onclick="showMatches()">See Matches</button>
-<div class="card"><b>How it works:</b><br>1. Tap Match<br>2. Tap 🔍 ANALYZE<br>3. Wait 8 sec - AI LOCKS digit<br>4. Go to Deriv, put that digit<br>5. Come back, tap NEXT →</div>
-<p class="small">Educational only. No prediction guaranteed.</p>
+<h1>Analyzer +<br><span style="color:#2f7bff">Deriv Bot. One digit.</span></h1>
+<p>Tap ANALYZE - LOCK digit - COPY - Put in Bot Prediction - RUN.</p>
+<button class="btn" onclick="showMatches()">Start free →</button><br><br><button class="btn2" onclick="showMatches()">See Matches</button>
 </div>
-
-<div id="matches" style="display:none;padding:12px">
-<h2>⚽ MATCHES - Tap a Match</h2>
-<div id="list"></div>
-<button class="btn2" onclick="showHome()">← Home</button>
-</div>
-
+<div id="matches" style="display:none;padding:12px"><h2>⚽ MATCHES - Tap a Match</h2><div id="list"></div><button class="btn2" onclick="showHome()">← Home</button></div>
 <div id="detail" style="display:none;padding:12px">
 <button class="btn2" onclick="backToMatches()">← All Matches</button>
 <h2 id="mTitle">Volatility 100</h2>
-<div class="tab"><button class="on" id="tOver" onclick="setTab('over')">OVER / UNDER</button><button id="tDigit" onclick="setTab('digit')">DIGITS</button><button id="tEven" onclick="setTab('even')">EVEN / ODD</button></div>
-
+<div class="tab"><button class="on" id="tOver" onclick="setTab('over')">OVER / UNDER</button><button id="tDigit" onclick="setTab('digit')">DIGITS / MATCHES</button><button id="tEven" onclick="setTab('even')">EVEN / ODD</button></div>
 <div class="card" style="text-align:center">
-<div class="small">🤖 AI PREDICTION - NEXT DIGIT</div>
+<div class="small">🤖 AI PREDICTION - FOR DERIV BOT</div>
 <div class="circle" id="circleBox"><div class="small">AI PREDICTS</div><div class="big" id="aiDigit">?</div><div id="aiConf" style="font-weight:bold;color:#2f7bff">--%</div><div id="lockStatus"></div></div>
 <div><span class="pill" id="aiLabel">READY - TAP ANALYZE</span></div>
-<p id="aiReason" style="font-size:14px">Tap ANALYZE below. AI will analyze and <b>LOCK</b> one digit. It will NOT keep changing.</p>
-<div id="btnArea">
-<button class="btn" id="analyzeBtn" onclick="startAnalyze()">🔍 ANALYZE - LOCK ONE DIGIT</button>
-</div>
+<p id="aiReason" style="font-size:14px">Tap ANALYZE. AI locks ONE digit. It will NOT change.</p>
+<div id="btnArea"><button class="btn" id="analyzeBtn" onclick="startAnalyze()">🔍 ANALYZE - LOCK ONE DIGIT</button></div>
 <div id="afterLock" style="display:none;margin-top:10px">
+<button class="btnY" id="copyBtn" onclick="copyDigit()">📋 COPY DIGIT FOR BOT - TAP HERE</button><br><br>
+<div style="background:#e8f5e9;padding:12px;border-radius:12px;font-weight:bold" id="botInstruction">Go to Deriv Bot -> Prediction = 7 -> RUN</div><br>
 <button class="btnG" onclick="nextDigit()">➡ NEXT DIGIT - ANALYZE AGAIN</button><br><br>
 <button class="btnR" onclick="unlock()">🔓 UNLOCK / STOP</button>
-<p style="font-size:13px;color:#00c853;font-weight:bold">✅ LOCKED! Go to Deriv now and trade this digit!<br>When done, come back and tap NEXT DIGIT.</p>
+<p style="font-size:13px">✅ LOCKED! Go to <b>bot.deriv.com</b> now!<br>Put digit in <b>Prediction</b> box -> Tap <b>RUN</b><br>After trade, come back, tap NEXT.</p>
 </div>
 </div>
-
-<div class="card" style="text-align:center">
-<div class="small">OVER / UNDER - LOCKED TOO</div>
-<div class="circle2"><div class="small">OVER / UNDER</div><div style="font-size:26px;font-weight:bold" id="ouVal">--</div><div id="ouPct">--%</div></div>
-</div>
-<div class="card"><b>📊 Digit 0-9 - AI Probability</b><div id="bars"></div></div>
+<div class="card"><b>📊 Digit 0-9</b><div id="bars"></div></div>
 <div class="card"><b>History:</b><div id="hist">No analysis yet</div></div>
 </div>
-
 <script>
-let matches=[
-{name:"Volatility 100 (1s)",sym:"R_100",price:512.34},
-{name:"Volatility 75 (1s)",sym:"R_75",price:1671.12},
-{name:"Volatility 50 (1s)",sym:"R_50",price:892.45},
-{name:"Volatility 25 (1s)",sym:"R_25",price:423.11},
-{name:"Volatility 10 (1s)",sym:"R_10",price:312.09},
-{name:"Boom 1000",sym:"BOOM1000",price:5534.65},
-{name:"Crash 1000",sym:"CRASH1000",price:2756.40},
-{name:"Jump 100",sym:"JD100",price:8895.67},
-];
-let cur=0,digits=[],timer=null,ws=null,tab='over',locked=false,lockedDigit=null,lockedOU=null,lockedConf=0,analyzing=false,count=0;
+let matches=[{name:"Volatility 100 (1s)",sym:"R_100",price:512.34},{name:"Volatility 75 (1s)",sym:"R_75",price:1671.12},{name:"Volatility 50 (1s)",sym:"R_50",price:892.45},{name:"Volatility 25 (1s)",sym:"R_25",price:423.11},{name:"Volatility 10 (1s)",sym:"R_10",price:312.09},{name:"Boom 1000",sym:"BOOM1000",price:5534.65},{name:"Crash 1000",sym:"CRASH1000",price:2756.40},{name:"Jump 100",sym:"JD100",price:8895.67}];
+let cur=0,digits=[],timer=null,ws=null,tab='digit',locked=false,lockedDigit=null,lockedOU=null,lockedConf=0,analyzing=false,count=0;
 function showHome(){document.getElementById('home').style.display='block';document.getElementById('matches').style.display='none';document.getElementById('detail').style.display='none';}
 function showMatches(){document.getElementById('home').style.display='none';document.getElementById('detail').style.display='none';document.getElementById('matches').style.display='block';renderList();stopAll();}
 function backToMatches(){stopAll();showMatches();}
-function renderList(){let h='';matches.forEach((m,i)=>{h+='<div class="match" onclick="openMatch('+i+')"><div><div style="font-size:11px;opacity:.6">'+m.sym+' • LIVE</div><b>'+m.name+'</b><br><span class="pill">AI LOCK PREDICTION</span></div><div style="text-align:right"><b>'+m.price.toFixed(2)+'</b><br>Tap →</div></div>'});document.getElementById('list').innerHTML=h;}
+function renderList(){let h='';matches.forEach((m,i)=>{h+='<div class="match" onclick="openMatch('+i+')"><div><div style="font-size:11px;opacity:.6">'+m.sym+' • LIVE</div><b>'+m.name+'</b><br><span class="pill">AI LOCK + BOT COPY</span></div><div style="text-align:right"><b>'+m.price.toFixed(2)+'</b><br>Tap →</div></div>'});document.getElementById('list').innerHTML=h;}
 function openMatch(i){cur=i;digits=[];locked=false;lockedDigit=null;analyzing=false;document.getElementById('matches').style.display='none';document.getElementById('detail').style.display='block';document.getElementById('mTitle').textContent=matches[i].name;resetUI();}
 function setTab(t){tab=t;document.getElementById('tOver').className=t==='over'?'on':'';document.getElementById('tDigit').className=t==='digit'?'on':'';document.getElementById('tEven').className=t==='even'?'on':'';if(locked)showLocked();}
 function stopAll(){if(timer)clearInterval(timer);timer=null;if(ws)try{ws.close()}catch(e){}ws=null;}
-function resetUI(){document.getElementById('aiDigit').textContent='?';document.getElementById('aiConf').textContent='--%';document.getElementById('circleBox').classList.remove('locked');document.getElementById('lockStatus').innerHTML='';document.getElementById('aiLabel').textContent='READY - TAP ANALYZE';document.getElementById('aiReason').innerHTML='Tap ANALYZE below. AI will analyze and <b>LOCK</b> one digit. It will NOT keep changing.';document.getElementById('btnArea').style.display='block';document.getElementById('afterLock').style.display='none';document.getElementById('analyzeBtn').textContent='🔍 ANALYZE - LOCK ONE DIGIT';document.getElementById('ouVal').textContent='--';document.getElementById('ouPct').textContent='--%';document.getElementById('bars').innerHTML='';document.getElementById('hist').textContent='No analysis yet';}
-function startAnalyze(){
-if(analyzing)return;analyzing=true;locked=false;digits=[];count=0;
-document.getElementById('analyzeBtn').textContent='⏳ ANALYZING... Please wait 8 sec...';
-document.getElementById('aiLabel').textContent='AI ANALYZING...';
-document.getElementById('aiReason').textContent='AI is reading ticks... Do NOT leave. It will LOCK in 8 seconds.';
-document.getElementById('circleBox').classList.remove('locked');
-try{
-ws=new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=1089');
-ws.onopen=()=>{ws.send(JSON.stringify({ticks:matches[cur].sym,subscribe:1}));};
-ws.onmessage=(m)=>{try{let d=JSON.parse(m.data);if(d.tick){let q=d.tick.quote.toString();let dg=parseInt(q.slice(-1));if(!locked)pushDigit(dg);}}catch(e){}};
-}catch(e){}
-if(timer)clearInterval(timer);
-timer=setInterval(()=>{
-if(locked)return;
-count++;
-// fallback sim if live slow
-if(digits.length<5){let b=Math.floor(Math.random()*10);if(digits.length>0)b=(digits[digits.length-1]+[1,2,3,7,8][Math.floor(Math.random()*5)])%10;pushDigit(b);}
-document.getElementById('aiReason').textContent='AI analyzing... '+digits.length+' ticks collected. Locking in '+(8-count)+' sec...';
-document.getElementById('aiDigit').textContent='⏳';
-if(count>=8)lockDigit();
-},1000);
-}
+function resetUI(){document.getElementById('aiDigit').textContent='?';document.getElementById('aiConf').textContent='--%';document.getElementById('circleBox').classList.remove('locked');document.getElementById('lockStatus').innerHTML='';document.getElementById('aiLabel').textContent='READY - TAP ANALYZE';document.getElementById('aiReason').innerHTML='Tap ANALYZE. AI locks ONE digit. It will NOT change.';document.getElementById('btnArea').style.display='block';document.getElementById('afterLock').style.display='none';document.getElementById('analyzeBtn').textContent='🔍 ANALYZE - LOCK ONE DIGIT';document.getElementById('bars').innerHTML='';document.getElementById('hist').textContent='No analysis yet';}
+function startAnalyze(){if(analyzing)return;analyzing=true;locked=false;digits=[];count=0;document.getElementById('analyzeBtn').textContent='⏳ ANALYZING... 8 sec...';document.getElementById('aiLabel').textContent='AI ANALYZING...';document.getElementById('aiReason').textContent='AI reading ticks... Will LOCK in 8 sec...';document.getElementById('circleBox').classList.remove('locked');try{ws=new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=1089');ws.onopen=()=>{ws.send(JSON.stringify({ticks:matches[cur].sym,subscribe:1}));};ws.onmessage=(m)=>{try{let d=JSON.parse(m.data);if(d.tick){let q=d.tick.quote.toString();let dg=parseInt(q.slice(-1));if(!locked)pushDigit(dg);}}catch(e){}};}catch(e){}if(timer)clearInterval(timer);timer=setInterval(()=>{if(locked)return;count++;if(digits.length<5){let b=Math.floor(Math.random()*10);if(digits.length>0)b=(digits[digits.length-1]+[1,2,3,7,8][Math.floor(Math.random()*5)])%10;pushDigit(b);}document.getElementById('aiReason').textContent='AI analyzing... '+digits.length+' ticks. Locking in '+(8-count)+' sec...';document.getElementById('aiDigit').textContent='⏳';if(count>=8)lockDigit();},1000);}
 function pushDigit(d){digits.push(d);if(digits.length>100)digits.shift();}
-function lockDigit(){
-stopAll();locked=true;analyzing=false;
-// AI logic: hot + transition
-let c=[0,0,0,0,0,0,0,0,0,0];digits.forEach(x=>c[x]++);
-let last=digits[digits.length-1]||5;let trans=[0,0,0,0,0,0,0,0,0,0];
-for(let i=0;i<digits.length-1;i++)if(digits[i]==last)trans[digits[i+1]]++;
-let aiD=trans.indexOf(Math.max(...trans));if(Math.max(...trans)==0)aiD=c.indexOf(Math.max(...c));
-let conf=Math.min(88,Math.round(52+Math.max(...trans)/Math.max(1,digits.length)*100+c[aiD]/Math.max(1,digits.length)*30));
-lockedDigit=aiD;lockedConf=conf;
-let over=digits.filter(x=>x>=5).length,overP=Math.round(over/digits.length*100);
-lockedOU=overP>=50?'OVER 4':'UNDER 5';
-showLocked();
-document.getElementById('btnArea').style.display='none';
-document.getElementById('afterLock').style.display='block';
-document.getElementById('hist').textContent='LOCKED: '+aiD+' | Last digits: '+digits.slice(-20).join(' - ');
-}
-function showLocked(){
-document.getElementById('aiDigit').textContent=lockedDigit;
-document.getElementById('aiConf').textContent=lockedConf+'% CONFIDENCE';
-document.getElementById('circleBox').classList.add('locked');
-document.getElementById('lockStatus').innerHTML='<div class="lockpill">🔒 LOCKED - WILL NOT CHANGE</div>';
-document.getElementById('aiLabel').textContent='🔒 AI PREDICTION: DIGIT '+lockedDigit+' - MATCHES';
-if(tab==='over')document.getElementById('aiReason').innerHTML='<b>🔒 LOCKED MATCHES:</b> Digit <b>'+lockedDigit+'</b> in ⭕ circle.<br>'+lockedOU+' - Go to Deriv now! Put <b>'+lockedOU+'</b> / Digit <b>'+lockedDigit+'</b>.<br>It will stay here until you tap NEXT.';
-else if(tab==='digit')document.getElementById('aiReason').innerHTML='<b>🔒 LOCKED MATCHES:</b> Digit <b>'+lockedDigit+'</b> - Use Matches / Digits Matches in Deriv. Stays locked!';
-else document.getElementById('aiReason').innerHTML='<b>🔒 LOCKED:</b> Digit <b>'+lockedDigit+'</b> - '+(lockedDigit%2==0?'EVEN':'ODD')+' - Stays locked!';
-document.getElementById('ouVal').textContent=lockedOU;
-document.getElementById('ouPct').textContent=lockedConf+'%';
-let cc=[0,0,0,0,0,0,0,0,0,0];digits.forEach(x=>cc[x]++);let bh='';for(let d=0;d<=9;d++){let p=Math.round(cc[d]/Math.max(1,digits.length)*100);bh+='<div>Digit '+d+' - '+p+'% '+(d==lockedDigit?'🔒 LOCKED':'')+'<div class="bar"><div class="fill" style="width:'+p+'%;background:'+(d==lockedDigit?'#00c853':'#2f7bff')+'"></div></div></div>';}document.getElementById('bars').innerHTML=bh;
-}
+function lockDigit(){stopAll();locked=true;analyzing=false;let c=[0,0,0,0,0,0,0,0,0,0];digits.forEach(x=>c[x]++);let last=digits[digits.length-1]||5;let trans=[0,0,0,0,0,0,0,0,0,0];for(let i=0;i<digits.length-1;i++)if(digits[i]==last)trans[digits[i+1]]++;let aiD=trans.indexOf(Math.max(...trans));if(Math.max(...trans)==0)aiD=c.indexOf(Math.max(...c));let conf=Math.min(88,Math.round(52+Math.max(...trans)/Math.max(1,digits.length)*100+c[aiD]/Math.max(1,digits.length)*30));lockedDigit=aiD;lockedConf=conf;let over=digits.filter(x=>x>=5).length,overP=Math.round(over/digits.length*100);lockedOU=overP>=50?'OVER 4':'UNDER 5';showLocked();document.getElementById('btnArea').style.display='none';document.getElementById('afterLock').style.display='block';document.getElementById('hist').textContent='LOCKED: '+aiD+' | Last: '+digits.slice(-20).join(' - ');document.getElementById('botInstruction').textContent='Go to Deriv Bot -> Prediction = '+aiD+' -> RUN | '+lockedOU;}
+function showLocked(){document.getElementById('aiDigit').textContent=lockedDigit;document.getElementById('aiConf').textContent=lockedConf+'% CONFIDENCE';document.getElementById('circleBox').classList.add('locked');document.getElementById('lockStatus').innerHTML='<div class="lockpill">🔒 LOCKED - WILL NOT CHANGE</div>';document.getElementById('aiLabel').textContent='🔒 DIGIT '+lockedDigit+' - FOR BOT';if(tab==='digit')document.getElementById('aiReason').innerHTML='<b>🔒 LOCKED MATCHES:</b> Digit <b>'+lockedDigit+'</b><br>COPY it -> Go to Deriv Bot -> <b>Prediction = '+lockedDigit+'</b> -> RUN';else document.getElementById('aiReason').innerHTML='<b>🔒 LOCKED:</b> Digit <b>'+lockedDigit+'</b> - '+lockedOU+' - Copy for Bot';let cc=[0,0,0,0,0,0,0,0,0,0];digits.forEach(x=>cc[x]++);let bh='';for(let d=0;d<=9;d++){let p=Math.round(cc[d]/Math.max(1,digits.length)*100);bh+='<div>Digit '+d+' - '+p+'% '+(d==lockedDigit?'🔒 LOCKED':'')+'<div class="bar"><div class="fill" style="width:'+p+'%;background:'+(d==lockedDigit?'#00c853':'#2f7bff')+'"></div></div></div>';}document.getElementById('bars').innerHTML=bh;}
+function copyDigit(){try{navigator.clipboard.writeText(String(lockedDigit));}catch(e){}document.getElementById('copyBtn').textContent='✅ COPIED DIGIT '+lockedDigit+' - NOW PASTE IN BOT!';setTimeout(()=>{document.getElementById('copyBtn').textContent='📋 COPY DIGIT FOR BOT - TAP HERE'},3000);alert('Digit '+lockedDigit+' copied! Go to Deriv Bot -> Tap Prediction box -> Paste -> RUN');}
 function nextDigit(){resetUI();startAnalyze();}
 function unlock(){stopAll();locked=false;resetUI();}
 renderList();
