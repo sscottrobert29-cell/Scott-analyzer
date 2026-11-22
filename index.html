@@ -8,7 +8,7 @@
 let ws,ticks=[],curType='Matches';
 function setType(el,t){document.querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));el.classList.add('on');curType=t;document.getElementById('predType').innerText=t.toUpperCase()+' PREDICTED';}
 function start(){let s=document.getElementById('sym').value;if(ws)ws.close();ticks=[];
-ws=new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=1089');
+ws=new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=1089');
 ws.onopen=()=>{ws.send(JSON.stringify({ticks:s}));ws.send(JSON.stringify({ticks_history:s,count:20,end:'latest',style:'ticks'}));document.getElementById('price').innerText='Connecting to '+s+'...';};
 ws.onmessage=(e)=>{let d=JSON.parse(e.data);if(d.tick)update(d.tick.quote);if(d.history)d.history.prices.forEach(p=>update(p));if(d.error)document.getElementById('price').innerText='Error: '+d.error.message;};
 }
