@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Scott V5</title>
+<title>Scott V6</title>
 <style>body{font-family:Arial;text-align:center;background:#0f172a;color:white;padding:15px}
 button,select{padding:12px;font-size:16px;border-radius:10px;border:none;margin:5px}
 button{background:#22d3ee;font-weight:bold}
@@ -10,7 +10,7 @@ button{background:#22d3ee;font-weight:bold}
 .box{background:#1e293b;padding:12px;border-radius:12px;margin-top:10px}</style>
 </head>
 <body>
-<h1>🔴 LIVE REAL - Scott V5</h1>
+<h1>🔴 LIVE REAL - Scott V6 FIXED</h1>
 <select id="sym"><option value="R_75">Volatility 75</option><option value="R_100">Volatility 100 (1s)</option><option value="R_25">Volatility 25 (1s)</option></select>
 <button onclick="start()">START LIVE</button>
 <div class="box" id="status">Tap START LIVE</div>
@@ -23,7 +23,7 @@ function start(){
  document.getElementById('status').innerText="Connecting... "+sym;
  ticks=[]; connect();
  setInterval(()=>{ if(ws && ws.readyState==1) ws.send(JSON.stringify({ping:1})); },10000);
- setInterval(()=>{ if(ticks.length>0 && Date.now()-lastTickTime>5000){ document.getElementById('status').innerText="Reconnecting - ticks stopped..."; connect(); } },6000);
+ setInterval(()=>{ if(ticks.length>0 && Date.now()-lastTickTime>5000){ document.getElementById('status').innerText="Reconnecting..."; connect(); } },6000);
 }
 function connect(){
  ws=new WebSocket('wss://api.derivws.com/trading/v1/options/ws/public');
@@ -32,15 +32,16 @@ function connect(){
   let d=JSON.parse(msg.data);
   if(d.tick){
    lastTickTime=Date.now();
-   let s=d.tick.quote.toString(); ticks.push(parseInt(s.slice(-1)));
+   let priceNum = d.tick.quote;
+   let s = priceNum.toFixed(4);
+   ticks.push(parseInt(s.slice(-1)));
    if(ticks.length>200) ticks.shift();
    document.getElementById('price').innerText=s;
    document.getElementById('count').innerText=ticks.length;
-   document.getElementById('status').innerText="✅ LIVE! "+ticks.length+" ticks - Last 200 ticks";
+   document.getElementById('status').innerText="✅ LIVE! "+ticks.length+" ticks - FIXED for Digit 0";
    showStats();
   }
  };
- ws.onclose=()=>{ if(ticks.length==0) document.getElementById('status').innerText="Closed - Tap START again"; };
 }
 function showStats(){
  let counts=[0,0,0,0,0,0,0,0,0,0]; ticks.forEach(x=>counts[x]++);
