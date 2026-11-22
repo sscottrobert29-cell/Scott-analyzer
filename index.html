@@ -37,7 +37,7 @@ function start(){
  document.getElementById('status').innerText="Connecting... "+sym;
  ticks=[];
  try{
-  ws=new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=1089');
+  ws=new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=16929');
   ws.onopen=()=>{
     document.getElementById('status').innerText="Connected! Getting history...";
     ws.send(JSON.stringify({ticks_history:sym, count:1000, end:"latest", style:"ticks"}));
