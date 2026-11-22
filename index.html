@@ -1,84 +1,53 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Scott REAL Analyzer V2</title>
-<style>
-body{font-family:Arial;text-align:center;background:#0f172a;color:white;padding:15px}
-h1{font-size:22px;color:#22d3ee}
-select,button{padding:12px;font-size:16px;border-radius:10px;border:none;margin:5px}
+<head><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scott V3</title>
+<style>body{font-family:Arial;text-align:center;background:#0f172a;color:white;padding:15px}
+button,select{padding:12px;font-size:16px;border-radius:10px;border:none;margin:5px}
 button{background:#22d3ee;font-weight:bold}
 .bar{height:28px;background:#1e293b;border-radius:8px;margin:6px 0;position:relative;overflow:hidden}
-.fill{height:100%;background:#22d3ee}
-.lab{position:absolute;left:10px;top:4px;font-weight:bold}
-.pct{position:absolute;right:10px;top:4px}
-.box{background:#1e293b;padding:12px;border-radius:12px;margin-top:10px}
-</style>
+.fill{height:100%;background:#22d3ee}.lab{position:absolute;left:10px;top:4px}.pct{position:absolute;right:10px;top:4px}
+.box{background:#1e293b;padding:12px;border-radius:12px;margin-top:10px}</style>
 </head>
 <body>
-<h1>🔴 LIVE REAL - Scott Analyzer V2</h1>
-<p>Real Deriv History - 1000 ticks</p>
-<select id="sym">
-<option value="R_75">Volatility 75</option>
-<option value="R_100">Volatility 100 (1s)</option>
-<option value="R_25">Volatility 25 (1s)</option>
-<option value="R_10">Volatility 10 (1s)</option>
-<option value="R_50">Volatility 50 (1s)</option>
-</select>
+<h1>🔴 LIVE REAL - Scott V3</h1>
+<select id="sym"><option value="R_75">Volatility 75</option><option value="R_100">Volatility 100 (1s)</option><option value="R_25">Volatility 25 (1s)</option></select>
 <button onclick="start()">START LIVE</button>
 <div class="box" id="status">Tap START LIVE</div>
 <div class="box"><b>Last Price:</b> <span id="price">-</span> | <b>Ticks:</b> <span id="count">0</span></div>
-<div id="bars"></div>
-<div class="box" id="best">Best digit will show here</div>
+<div id="bars"></div><div class="box" id="best">Best digit will show here</div>
 <script>
 let ticks=[], ws;
 function start(){
  let sym=document.getElementById('sym').value;
- document.getElementById('status').innerText="Connecting... "+sym;
+ document.getElementById('status').innerText="Connecting... "+sym+" - Please wait 10 sec";
  ticks=[];
- try{
-  ws=new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=16929');
-  ws.onopen=()=>{
-    document.getElementById('status').innerText="Connected! Getting history...";
-    ws.send(JSON.stringify({ticks_history:sym, count:1000, end:"latest", style:"ticks"}));
-    ws.send(JSON.stringify({ticks:sym, subscribe:1}));
-  };
-  ws.onerror=(e)=>{ document.getElementById('status').innerText="ERROR: WebSocket blocked - Try other network / VPN. Error: "+e.type; };
-  ws.onclose=()=>{ if(ticks.length==0) document.getElementById('status').innerText="Connection CLOSED by Deriv - Try again or use VPN"; };
-  ws.onmessage=(msg)=>{
-    let d=JSON.parse(msg.data);
-    if(d.history){
-      d.history.prices.forEach(p=>{
-        let s=p.toString(); ticks.push(parseInt(s.slice(-1)));
-      });
-      document.getElementById('count').innerText=ticks.length;
-      document.getElementById('price').innerText=d.history.prices[d.history.prices.length-1];
-      document.getElementById('status').innerText="✅ SUCCESS! Got "+ticks.length+" REAL ticks!";
-      showStats();
-    }
-    if(d.tick){
-      let s=d.tick.quote.toString(); ticks.push(parseInt(s.slice(-1)));
-      if(ticks.length>1000) ticks.shift();
-      document.getElementById('price').innerText=s;
-      document.getElementById('count').innerText=ticks.length;
-      document.getElementById('status').innerText="✅ LIVE - "+ticks.length+" ticks";
-      showStats();
-    }
-    if(d.error) document.getElementById('status').innerText="Deriv Error: "+d.error.message;
-  };
- }catch(err){ document.getElementById('status').innerText="Error: "+err.message; }
+ ws=new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=1089');
+ ws.onopen=()=>{
+  document.getElementById('status').innerText="Connected! Asking for ticks...";
+  setTimeout(()=>{ ws.send(JSON.stringify({ticks:sym})); },500);
+ };
+ ws.onerror=()=>{ document.getElementById('status').innerText="ERROR - Try VPN ON + Refresh"; };
+ ws.onclose=()=>{ if(ticks.length==0) document.getElementById('status').innerText="Closed - Try: 1) VPN ON 2) Refresh 3) Tap START again"; };
+ ws.onmessage=(msg)=>{
+  let d=JSON.parse(msg.data);
+  if(d.tick){
+   let s=d.tick.quote.toString(); ticks.push(parseInt(s.slice(-1)));
+   document.getElementById('price').innerText=s;
+   document.getElementById('count').innerText=ticks.length;
+   document.getElementById('status').innerText="✅ LIVE! "+ticks.length+" ticks - KEEP GOING!";
+   showStats();
+  }
+  if(d.error) document.getElementById('status').innerText="Deriv Error: "+d.error.message;
+ };
 }
 function showStats(){
- let counts=[0,0,0,0,0,0,0,0,0,0];
- ticks.forEach(x=>counts[x]++);
- let html=""; let best=0,bestPct=0;
- counts.forEach((c,i)=>{
-   let pct=ticks.length?((c/ticks.length)*100):0;
-   if(pct>bestPct){bestPct=pct;best=i;}
-   html+=`<div class="bar"><div class="fill" style="width:${pct*5}%"></div><span class="lab">Digit ${i}</span><span class="pct">${c} x - ${pct.toFixed(1)}%</span></div>`;
- });
+ let counts=[0,0,0,0,0,0,0,0,0,0]; ticks.forEach(x=>counts[x]++);
+ let html="",best=0,bestPct=0;
+ counts.forEach((c,i)=>{ let pct=ticks.length?((c/ticks.length)*100):0; if(pct>bestPct){bestPct=pct;best=i;}
+ html+=`<div class="bar"><div class="fill" style="width:${pct*5}%"></div><span class="lab">Digit ${i}</span><span class="pct">${c} - ${pct.toFixed(1)}%</span></div>`;});
  document.getElementById('bars').innerHTML=html;
- document.getElementById('best').innerHTML=`Most frequent: <b style="color:#22d3ee;font-size:22px">Digit ${best} - ${bestPct.toFixed(1)}%</b> - DEMO ONLY`;
+ document.getElementById('best').innerHTML=`Most frequent: <b>Digit ${best} - ${bestPct.toFixed(1)}%</b> - DEMO ONLY`;
 }
 </script>
 </body>
