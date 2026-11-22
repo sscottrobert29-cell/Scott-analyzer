@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Scott V3</title>
+<title>Scott V4</title>
 <style>body{font-family:Arial;text-align:center;background:#0f172a;color:white;padding:15px}
 button,select{padding:12px;font-size:16px;border-radius:10px;border:none;margin:5px}
 button{background:#22d3ee;font-weight:bold}
@@ -10,7 +10,7 @@ button{background:#22d3ee;font-weight:bold}
 .box{background:#1e293b;padding:12px;border-radius:12px;margin-top:10px}</style>
 </head>
 <body>
-<h1>🔴 LIVE REAL - Scott V3</h1>
+<h1>🔴 LIVE REAL - Scott V4</h1>
 <select id="sym"><option value="R_75">Volatility 75</option><option value="R_100">Volatility 100 (1s)</option><option value="R_25">Volatility 25 (1s)</option></select>
 <button onclick="start()">START LIVE</button>
 <div class="box" id="status">Tap START LIVE</div>
@@ -20,22 +20,22 @@ button{background:#22d3ee;font-weight:bold}
 let ticks=[], ws;
 function start(){
  let sym=document.getElementById('sym').value;
- document.getElementById('status').innerText="Connecting... "+sym+" - Please wait 10 sec";
+ document.getElementById('status').innerText="Connecting to NEW Deriv... "+sym+" Wait 10 sec";
  ticks=[];
- ws=new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=1089');
+ ws=new WebSocket('wss://api.derivws.com/trading/v1/options/ws/public');
  ws.onopen=()=>{
   document.getElementById('status').innerText="Connected! Asking for ticks...";
   setTimeout(()=>{ ws.send(JSON.stringify({ticks:sym})); },500);
  };
- ws.onerror=()=>{ document.getElementById('status').innerText="ERROR - Try VPN ON + Refresh"; };
- ws.onclose=()=>{ if(ticks.length==0) document.getElementById('status').innerText="Closed - Try: 1) VPN ON 2) Refresh 3) Tap START again"; };
+ ws.onerror=()=>{ document.getElementById('status').innerText="ERROR - Refresh and try again"; };
+ ws.onclose=()=>{ if(ticks.length==0) document.getElementById('status').innerText="Closed - Tap START again"; };
  ws.onmessage=(msg)=>{
   let d=JSON.parse(msg.data);
   if(d.tick){
    let s=d.tick.quote.toString(); ticks.push(parseInt(s.slice(-1)));
    document.getElementById('price').innerText=s;
    document.getElementById('count').innerText=ticks.length;
-   document.getElementById('status').innerText="✅ LIVE! "+ticks.length+" ticks - KEEP GOING!";
+   document.getElementById('status').innerText="✅ LIVE! "+ticks.length+" ticks!";
    showStats();
   }
   if(d.error) document.getElementById('status').innerText="Deriv Error: "+d.error.message;
