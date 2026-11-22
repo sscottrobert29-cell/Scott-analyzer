@@ -38,7 +38,7 @@ function start(){
   ticks=[];
   document.getElementById('status').innerText="Connecting to Deriv LIVE... "+sym;
   if(ws) ws.close();
-  ws=new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=1089');
+  ws=new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=1089');
   ws.onopen=()=>{ ws.send(JSON.stringify({ticks:sym, subscribe:1})); };
   ws.onmessage=(msg)=>{
     let d=JSON.parse(msg.data);
