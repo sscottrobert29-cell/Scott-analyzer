@@ -1,99 +1,22 @@
-<!DOCTYPE html>
-<html>
-<head><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>V7 PRO CORTEX - FREE</title>
-<style>
-body{background:#04211a;color:#fff;font-family:Arial;text-align:center;padding:15px}
-h2{letter-spacing:2px} .sub{color:#aaa;font-size:12px}
-.card{background:#0a2e24;border-radius:15px;padding:15px;margin:10px 0;text-align:left}
-select,input{width:100%;padding:12px;border-radius:10px;background:#123a2e;color:#fff;border:0;margin-top:5px}
-.row{display:flex;gap:8px} .row div{flex:1}
-.btns{display:flex;flex-wrap:wrap;gap:8px}
-.btns button{flex:1;background:#123a2e;color:#fff;border:0;padding:12px;border-radius:20px}
-.btns button.active{background:#00c9a7;color:#000;font-weight:bold}
-.analyze{width:100%;background:#00c9a7;border:0;padding:15px;border-radius:25px;font-weight:bold;font-size:16px;margin-top:10px}
-.circle{width:170px;height:170px;border:6px solid #00c9a7;border-radius:50%;margin:15px auto;display:flex;flex-direction:column;justify-content:center}
-.circle b{font-size:60px} .circle span{font-size:12px;color:#aaa}
-.copy{background:#fff;color:#000;border:0;padding:12px 20px;border-radius:10px;font-weight:bold}
-</style>
-</head>
-<body>
-<h2>PRO CORTEX - V7 FREE</h2>
-<p class="sub">⭐ Think deeper Decide smarter</p>
-
-<div class="card">
-<p>Current Price: <b id="price">---</b> &nbsp; Last Digit: <b id="last">-</b></p>
-<p>Even/Odd Pattern (last 10)</p>
-<h3 id="pattern">- - - - - - - - - -</h3>
-</div>
-
-<div class="card">
-<div class="row"><div>Market<select id="market"><option>Derived</option></select></div><div>Index<select><option>Continuous Indices</option></select></div></div>
-<div class="row"><div>Volatility<select id="vol" onchange="changeVol()">
-<option value="R_25">Volatility 25 (1s)</option>
-<option value="R_75" selected>Volatility 75 (1s)</option>
-<option value="R_100">Volatility 100 (1s)</option>
-<option value="R_50">Volatility 50 (1s)</option>
-<option value="R_10">Volatility 10 (1s)</option>
-</select></div><div>Candle<select><option>1 minute</option></select></div></div>
-<div>Tick duration<input id="ticks" value="1"></div>
-</div>
-
-<div class="card">
-<div class="btns">
-<button class="active" onclick="setType(this,'Matches')">Matches</button>
-<button onclick="setType(this,'Differs')">Differs</button>
-<button onclick="setType(this,'Even')">Even</button>
-</div>
-<div class="btns" style="margin-top:8px">
-<button onclick="setType(this,'Odd')">Odd</button>
-<button onclick="setType(this,'Over')">Over</button>
-<button onclick="setType(this,'Under')">Under</button>
-</div>
-<button class="analyze" onclick="analyze()">Analyze Digits</button>
-<p><input type="checkbox" id="auto"> Auto-refresh &nbsp; <select style="width:80px"><option>1 sec</option></select></p>
-</div>
-
-<div class="card" style="text-align:center">
-<div class="circle"><b id="pred">-</b><span>AI Prediction</span><span id="predType">MATCHES PREDICTED -</span></div>
-<p id="status">Waiting... Tap Analyze Digits</p>
-<button class="copy" onclick="copyPred()">COPY TO DERIV BOT: Prediction = <span id="copyVal">-</span></button>
-<p style="font-size:11px;color:#aaa;margin-top:10px">FREE V7 - Statistics only. NOT guarantee. Use DEMO, $1 stake, 1 Tick like in video.</p>
-</div>
-
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>PRO CORTEX V7 FIXED</title><style>body{background:#04211d;color:#fff;font-family:sans-serif;padding:15px;text-align:center} .box{background:#0a322c;padding:15px;border-radius:15px;margin:10px 0} button{background:#00d8b0;color:#000;padding:15px;border:none;border-radius:25px;width:100%;font-weight:bold;font-size:18px} select,input{width:100%;padding:10px;margin:5px 0;border-radius:10px;background:#06322b;color:#fff;border:none} .circle{width:180px;height:180px;border:4px solid #00d8b0;border-radius:50%;margin:15px auto;display:flex;align-items:center;justify-content:center;font-size:50px}</style></head><body>
+<h2>PRO CORTEX - V7 FIXED</h2><div class="box"><div id="price">Current Price: Connecting...</div><div id="digit">Last Digit: -</div><div id="pattern">Even/Odd: ----------</div></div>
+<div class="box"><label>Market</label><select id="sym"><option value="1HZ75V">Volatility 75 (1s)</option><option value="R_75">Volatility 75</option><option value="R_100">Volatility 100 (1s) - 1HZ100V</option><option value="1HZ10V">Volatility 10 (1s)</option><option value="R_10">Volatility 10</option></select>
+<button onclick="start()">Analyze Digits</button><br><br><input type="checkbox" id="auto"> Auto-refresh</div>
+<div class="box"><div class="circle" id="pred">-</div><div id="msg">Waiting... Tap Analyze</div><br><button onclick="copyTxt()">COPY TO DERIV BOT</button><div id="copyTxt">Prediction = -</div></div>
 <script>
-let type='Matches', history=[], counts=[0,0,0,0,0,0,0,0,0,0], ws, symbol='R_75';
-function setType(el,t){type=t; document.querySelectorAll('.btns button').forEach(b=>b.classList.remove('active')); el.classList.add('active')}
-function connect(){
-if(ws) ws.close();
-ws=new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=1089');
-ws.onopen=()=>ws.send(JSON.stringify({ticks:symbol,subscribe:1}));
-ws.onmessage=(e)=>{let d=JSON.parse(e.data); if(d.tick){
-let q=d.tick.quote.toString(); let last=parseInt(q.slice(-1));
-document.getElementById('price').innerText=q;
-document.getElementById('last').innerText=last;
-history.unshift(last); if(history.length>100) history.pop();
-counts[last]++;
-let pat=history.slice(0,10).reverse().map(n=>n%2==0?'E':'O').join(' ');
-document.getElementById('pattern').innerText=pat;
-}}
+let ws, ticks=[];
+function start(){ let s=document.getElementById('sym').value; if(s.includes('100')) s='1HZ100V';
+ if(ws) ws.close(); ticks=[];
+ ws=new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=1089');
+ ws.onopen=()=>{ ws.send(JSON.stringify({ticks:s})); ws.send(JSON.stringify({ticks_history:s,count:20,end:'latest',style:'ticks'})); document.getElementById('price').innerText='Connecting to '+s+'...'; };
+ ws.onmessage=(e)=>{ let d=JSON.parse(e.data); if(d.tick){ let p=d.tick.quote; update(p); } if(d.history){ d.history.prices.forEach(p=>update(p,true)); } if(d.error){ document.getElementById('price').innerText='Error: '+d.error.message; } };
 }
-function changeVol(){symbol=document.getElementById('vol').value; history=[]; counts=[0,0,0,0,0,0,0,0,0,0]; connect()}
-function analyze(){
-document.getElementById('status').innerText='Analyzing...';
-setTimeout(()=>{
-if(history.length<20){document.getElementById('status').innerText='Need more ticks... wait 20 sec'; return}
-// AI = Most frequent in last 50 ticks + last pattern
-let last50=history.slice(0,50); let c=[0,0,0,0,0,0,0,0,0,0]; last50.forEach(n=>c[n]++);
-let best=0; c.forEach((v,i)=>{if(v>c[best]) best=i});
-document.getElementById('pred').innerText=best;
-document.getElementById('predType').innerText=type+' PREDICTED '+best;
-document.getElementById('copyVal').innerText=best;
-document.getElementById('status').innerText='Done! Copy '+best+' to Deriv Bot -> Matches -> Prediction '+best+' -> 1 Tick -> $1';
-},800);
+function update(p,fromHist){ let str=p.toString(); let last=parseInt(str.slice(-1)); document.getElementById('price').innerText='Current Price: '+p; document.getElementById('digit').innerText='Last Digit: '+last;
+ if(!fromHist){ ticks.push(last); if(ticks.length>10) ticks.shift(); } else { ticks.push(last); if(ticks.length>10) ticks.shift(); }
+ let pat=ticks.map(n=>n%2==0?'E':'O').join(' '); document.getElementById('pattern').innerText='Even/Odd: '+pat;
+ let ev=ticks.filter(n=>n%2==0).length; let pred = ev>=5 ? 'EVEN' : 'ODD'; document.getElementById('pred').innerText=pred[0]; document.getElementById('msg').innerText='Prediction: '+pred+' - Even '+ev+'/10'; document.getElementById('copyTxt').innerText='Prediction = '+pred;
 }
-function copyPred(){let v=document.getElementById('copyVal').innerText; alert('Copy this to Deriv Bot:\nMarket: '+document.getElementById('vol').options[document.getElementById('vol').selectedIndex].text+'\nTrade: '+type+'\nPrediction: '+v+'\nDuration: 1 Tick\nStake: $1 DEMO');}
-connect();
-</script>
-</body>
-</html>
+function copyTxt(){ navigator.clipboard.writeText(document.getElementById('copyTxt').innerText); alert('Copied!'); }
+setInterval(()=>{ if(document.getElementById('auto').checked) start(); },3000);
+start();
+</script></body></html>
