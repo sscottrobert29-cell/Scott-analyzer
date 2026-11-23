@@ -8,7 +8,7 @@ let digits=[],ws=null;
 function connect(){
  if(ws) try{ws.close()}catch(e){}
  document.getElementById('st').innerText='CONNECTING...';document.getElementById('err').innerText='';digits=[];
- ws=new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=1089');
+ ws=new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=1089');
  ws.onopen=()=>{
   document.getElementById('st').innerText='CONNECTED - LOADING...';
   // FIXED: same as Deriv Bot - subscribe:1 + get history
