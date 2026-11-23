@@ -1,93 +1,72 @@
 <!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PRO CORTEX V9</title>
-<style>body{background:#02120f;color:#fff;font-family:Arial;padding:15px}h1{text-align:center}
+<title>PRO CORTEX V10</title>
+<style>body{background:#02120f;color:#fff;font-family:Arial;padding:15px;text-align:center}
 .box{background:#0a2a24;padding:15px;border-radius:12px;margin:10px 0}
 button{background:#00e5b0;color:#000;border:0;padding:14px;width:100%;border-radius:10px;font-size:18px;font-weight:bold}
 select,input{width:100%;padding:10px;margin:5px 0;background:#123;color:#fff;border:1px solid #00e5b0;border-radius:8px}
-.chip{display:inline-block;padding:8px 14px;background:#123;border-radius:20px;margin:3px}
-.chip.on{background:#00e5b0;color:#000}</style></head>
+.c{width:42px;height:42px;border-radius:50%;background:#123;display:inline-flex;align-items:center;justify-content:center;margin:3px;font-weight:bold;border:2px solid #00e5b0}
+.c.hot{background:#ff3b30;border-color:#fff}.c.best{background:#00e5b0;color:#000}
+.chip{display:inline-block;padding:8px 14px;background:#123;border-radius:20px;margin:3px}.chip.on{background:#00e5b0;color:#000}</style></head>
 <body>
-<h1>PRO CORTEX - V9 FREE</h1>
-<p style="text-align:center">⭐ Think deeper Decide smarter</p>
-<div class="box">
-<div id="price">Current Price: -</div>
-<div id="digit">Last Digit: -</div>
-<div id="pattern">Even/Odd Pattern (last 10): -</div>
-<div id="status" style="color:yellow">Status: Ready</div>
-</div>
-<label>Volatility</label>
-<select id="sym">
-<option value="1HZ75V">Volatility 75 (1s)</option>
-<option value="R_75">Volatility 75</option>
-<option value="1HZ100V">Volatility 100 (1s)</option>
-<option value="R_100">Volatility 100</option>
-<option value="1HZ50V">Volatility 50 (1s)</option>
-<option value="R_50">Volatility 50</option>
-</select>
-<label>Trade Type</label>
+<h1>PRO CORTEX - V10</h1><p>⭐ Think deeper Decide smarter</p>
+<div class="box"><div id="price">Current Price: -</div><div id="digit">Last Digit: -</div><div id="pattern">Pattern: -</div><div id="status" style="color:yellow">Status: Ready</div></div>
+<select id="sym"><option value="1HZ75V">Volatility 75 (1s)</option><option value="R_75">Volatility 75</option><option value="1HZ100V">Volatility 100 (1s)</option><option value="R_100">Volatility 100</option><option value="1HZ50V">Volatility 50 (1s)</option><option value="R_50">Volatility 50</option></select>
 <div id="types"><span class="chip on" data-t="Matches">Matches</span><span class="chip" data-t="Differs">Differs</span><span class="chip" data-t="Even">Even</span><span class="chip" data-t="Odd">Odd</span><span class="chip" data-t="Over">Over</span><span class="chip" data-t="Under">Under</span></div>
-<label>Digit / Number (for Matches/Differs/Over/Under)</label>
 <input id="num" type="number" value="5" min="0" max="9">
 <button onclick="analyze()">Analyze Digits</button>
-<div class="box" id="result">Press Analyze Digits</div>
+<div class="box"><h3>🤖 AI Prediction - Circles</h3><div id="circles">Press Analyze</div><div id="result">Press Analyze Digits</div></div>
 <script>
-let trade="Matches";
+let trade="Matches";let digits=[];
 document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');trade=c.dataset.t});
-let digits=[];
-const SERVERS=[
-"wss://api.derivws.com/trading/v1/options/ws/public",
-"wss://ws.binaryws.com/websockets/v3?l=EN&app_id=1089",
-"wss://ws.derivws.com/websockets/v3?l=EN&app_id=1089",
-"wss://ws.deriv.com/websockets/v3?l=EN&app_id=1089"
-];
 function setStatus(t){document.getElementById('status').textContent="Status: "+t}
-function tryServer(i){
-  if(i>=SERVERS.length){setStatus("ALL BLOCKED - Turn VPN ON + Try again");document.getElementById('price').textContent="Current Price: BLOCKED";return}
-  setStatus("Trying server "+(i+1)+" / "+SERVERS.length+" ...");
-  let ws; try{ws=new WebSocket(SERVERS[i])}catch(e){tryServer(i+1);return}
-  let done=false;
-  let timer=setTimeout(()=>{try{ws.close()}catch(e){};if(!done){done=true;tryServer(i+1)}},6000);
-  ws.onopen=()=>{
-    let sym=document.getElementById('sym').value;
-    // new public server uses different message, old servers use ticks_history
-    if(SERVERS[i].includes("api.derivws.com")){
-      ws.send(JSON.stringify({ticks_history:{ticks_history:sym,adjust_start_time:1,count:20,end:"latest",style:"ticks",subscribe:1}}));
-    } else {
-      ws.send(JSON.stringify({ticks_history:sym,adjust_start_time:1,count:20,end:"latest",style:"ticks",subscribe:1}));
-    }
+function connect(){
+  setStatus("Connecting to NEW Deriv server...");
+  let ws=new WebSocket("wss://api.derivws.com/trading/v1/options/ws/public");
+  let sym=document.getElementById('sym').value;
+  ws.onopen=()=>{ setStatus("Connected! Asking for ticks..."); ws.send(JSON.stringify({ticks_history:sym,end:"latest",count:100,style:"ticks",subscribe:1})); };
+  ws.onmessage=(e)=>{ let d=JSON.parse(e.data);
+    if(d.ticks_history&&d.ticks_history.prices){digits=d.ticks_history.prices.map(p=>String(p).slice(-1));show();setStatus("LIVE ✅ NEW SERVER");}
+    if(d.tick){digits.push(String(d.tick.quote).slice(-1));if(digits.length>100)digits.shift();show();setStatus("LIVE ✅ NEW SERVER");}
+    if(d.error){ setStatus("Error: "+d.error.message+" - Trying old server..."); connectOld(); }
   };
-  ws.onmessage=(e)=>{
-    let d=JSON.parse(e.data);
-    let hist=d.history||d.ticks_history;
-    if(hist&&hist.prices){clearTimeout(timer);done=true;digits=hist.prices.map(p=>String(p).slice(-1));showDigits();setStatus("LIVE ✅ Server "+(i+1));return}
-    if(d.tick){digits.push(String(d.tick.quote).slice(-1));if(digits.length>20)digits.shift();showDigits();setStatus("LIVE ✅ Server "+(i+1))}
-    if(d.error){clearTimeout(timer);if(!done){done=true;tryServer(i+1)}}
-  };
-  ws.onerror=()=>{clearTimeout(timer);if(!done){done=true;tryServer(i+1)}};
+  ws.onerror=()=>{ setStatus("New server blocked, trying old..."); connectOld(); };
+  setTimeout(()=>{if(!digits.length){try{ws.close()}catch(e){}}},8000);
 }
-function showDigits(){
+function connectOld(){
+  let ws=new WebSocket("wss://ws.derivws.com/websockets/v3?l=EN&app_id=1089");
+  let sym=document.getElementById('sym').value;
+  ws.onopen=()=>{ ws.send(JSON.stringify({ticks_history:sym,end:"latest",count:100,style:"ticks",subscribe:1})); };
+  ws.onmessage=(e)=>{ let d=JSON.parse(e.data);
+    if(d.ticks_history&&d.ticks_history.prices){digits=d.ticks_history.prices.map(p=>String(p).slice(-1));show();setStatus("LIVE ✅ OLD SERVER");}
+    if(d.tick){digits.push(String(d.tick.quote).slice(-1));show();setStatus("LIVE ✅ OLD SERVER");}
+    if(d.error)setStatus("ALL BLOCKED - Close Chrome + Reopen");
+  };
+  ws.onerror=()=>setStatus("ALL BLOCKED - Close Chrome + Reopen");
+}
+function show(){
   if(!digits.length)return;
-  let last=digits[digits.length-1];
-  document.getElementById('digit').textContent="Last Digit: "+last;
-  let pat=digits.slice(-10).map(x=> (parseInt(x)%2==0?"E":"O")).join(" ");
-  document.getElementById('pattern').textContent="Even/Odd Pattern (last 10): "+pat;
+  document.getElementById('digit').textContent="Last Digit: "+digits[digits.length-1];
+  document.getElementById('pattern').textContent="Pattern (last 10): "+digits.slice(-10).map(x=>parseInt(x)%2==0?"E":"O").join(" ");
 }
 function analyze(){
-  setStatus("Connecting...");
-  tryServer(0);
+  connect();
   setTimeout(()=>{
-    if(digits.length<5){document.getElementById('result').innerHTML="Still loading ticks... Tap Analyze again in 5 seconds";return}
+    if(digits.length<5){document.getElementById('result').innerHTML="Still loading... Tap Analyze again in 5 sec";return}
     let counts=[0,0,0,0,0,0,0,0,0,0];digits.forEach(d=>counts[parseInt(d)]++);
     let even=digits.filter(d=>parseInt(d)%2==0).length, odd=digits.length-even;
     let n=parseInt(document.getElementById('num').value||5);
+    let best=counts.indexOf(Math.max(...counts));
+    let html=counts.map((c,i)=>'<div class="c '+(i==best?'best':'')+'">'+i+'<br><small>'+c+'</small></div>').join("");
+    document.getElementById('circles').innerHTML=html+"<br><b>Best Digit: "+best+" (appeared "+counts[best]+" times)</b>";
     let pick="";
-    if(trade=="Even")pick= even>=odd?"EVEN ✅ ("+even+" vs "+odd+")":"ODD ✅ ("+odd+" vs "+even+")";
-    if(trade=="Odd")pick= odd>=even?"ODD ✅ ("+odd+" vs "+even+")":"EVEN ✅ ("+even+" vs "+odd+")";
-    if(trade=="Matches"||trade=="Differs")pick=trade+" "+n+" - Count in last "+digits.length+": "+counts[n]+" times";
-    if(trade=="Over")pick="OVER "+n+" - Digits > "+n+": "+digits.filter(d=>parseInt(d)>n).length;
-    if(trade=="Under")pick="UNDER "+n+" - Digits < "+n+": "+digits.filter(d=>parseInt(d)<n).length;
-    document.getElementById('result').innerHTML="<b>Last "+digits.length+" digits:</b> "+digits.join(", ")+"<br><b>Counts:</b> "+counts.map((c,i)=>i+":"+c).join(" ")+"<br><b>Even:</b> "+even+" <b>Odd:</b> "+odd+"<br><h2>"+pick+"</h2><small>⚠️ This is analysis only, not a guarantee. Trade small.</small>";
-  },4000);
+    if(trade=="Even")pick=even>=odd?"EVEN ✅ "+even+" vs "+odd:"ODD ✅ "+odd+" vs "+even;
+    if(trade=="Odd")pick=odd>=even?"ODD ✅ "+odd+" vs "+even:"EVEN ✅ "+even+" vs "+odd;
+    if(trade=="Matches")pick="MATCHES "+n+" - appeared "+counts[n]+" times";
+    if(trade=="Differs")pick="DIFFERS "+n+" - appeared "+counts[n]+" times, differs = "+(digits.length-counts[n]);
+    if(trade=="Over")pick="OVER "+n+" - "+digits.filter(d=>parseInt(d)>n).length+" digits";
+    if(trade=="Under")pick="UNDER "+n+" - "+digits.filter(d=>parseInt(d)<n).length+" digits";
+    document.getElementById('result').innerHTML="<b>Last 20:</b> "+digits.slice(-20).join(", ")+"<br><b>Even:</b> "+even+" <b>Odd:</b> "+odd+"<br><h2>"+pick+"</h2><small>⚠️ Analysis only, not guarantee. Trade small.</small>";
+  },5000);
 }
 </script></body></html>
