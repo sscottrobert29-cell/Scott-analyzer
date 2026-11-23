@@ -1,55 +1,51 @@
 <!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PRO CORTEX V11 - DBOT MATCHES</title>
+<title>PRO CORTEX V11.1 - DBOT</title>
 <style>
 body{background:#02120e;color:#fff;font-family:Arial;text-align:center;margin:0;padding:12px}
 .card{background:#06231c;border:2px solid #00ffc8;border-radius:16px;padding:14px;margin:10px 0}
-select,input{width:100%;padding:14px;border-radius:10px;background:#02120e;color:#fff;border:1px solid #00ffc8;font-size:18px;text-align:center}
+select{width:100%;padding:14px;border-radius:10px;background:#02120e;color:#fff;border:1px solid #00ffc8;font-size:18px;text-align:center}
 button{width:100%;padding:16px;border:none;border-radius:12px;background:#00ffc8;color:#000;font-size:20px;font-weight:900;margin-top:10px}
-.big{font-size:90px;font-weight:900;color:#00ffc8;line-height:1}
+.big{font-size:90px;font-weight:900;color:#00ffc8}
 .box{background:#ffcc00;color:#000;border-radius:14px;padding:14px;font-size:22px;font-weight:900;margin:10px 0}
 .small{font-size:14px;color:#ccc}
-.circ{display:inline-block;width:52px;height:52px;line-height:16px;border:2px solid #00ffc8;border-radius:50%;margin:3px;padding-top:8px;font-size:16px}
+.circ{display:inline-block;width:52px;height:52px;line-height:16px;border:2px solid #00ffc8;border-radius:50%;margin:3px;padding-top:8px}
 .circ b{font-size:18px}.best{background:#00ffc8;color:#000}
 </style></head><body>
-<h2>⭐ PRO CORTEX V11<br>DBOT MATCHES PREDICTOR</h2>
-<div class="card">Current Price: <b id="price">-</b><br>Last Digit: <b id="last">-</b><br>Pattern: <b id="pat">-</b><br>Status: <b id="st" style="color:yellow">CONNECTING...</b></div>
+<h2>⭐ PRO CORTEX V11.1<br>DBOT MATCHES PREDICTOR</h2>
+<div class="card">Price: <b id="price">-</b><br>Last Digit: <b id="last">-</b><br>Pattern: <b id="pat">-</b><br>Status: <b id="st" style="color:yellow">CONNECTING...</b><br><span id="err" style="color:#ff7777;font-size:13px"></span></div>
 <div class="card">
 <select id="sym"><option value="R_75">Volatility 75 (1s)</option><option value="R_100">Volatility 100 (1s)</option><option value="R_50">Volatility 50 (1s)</option><option value="R_10">Volatility 10 (1s)</option></select>
 <br><br>
 <button onclick="analyze()">🔍 ANALYZE FOR DBOT</button>
+<button onclick="connect()" style="background:#ffcc00">🔄 RECONNECT</button>
 </div>
 <div class="card" id="out" style="display:none">
 <div>🤖 AI MATCHES PREDICTION</div>
-<div class="small">Take this digit to Deriv Bot</div>
 <div class="big" id="bestDigit">-</div>
 <div class="box" id="take">TAKE 7 TO DBOT</div>
-<div id="circles"></div>
-<div id="details"></div>
-<div class="small" style="text-align:left;line-height:1.6">
-<b>HOW TO USE IN DBOT:</b><br>
-1. Copy digit above ☝️<br>
-2. Open Deriv Bot -> Digits -> Matches<br>
-3. Paste digit -> Stake $0.35 -> Run<br>
-4. Win or Lose, come back here<br>
-5. Tap ANALYZE again for NEW digit
-</div>
+<div id="circles"></div><div id="details"></div>
+<div class="small" style="text-align:left;line-height:1.6"><b>HOW TO USE IN DBOT:</b><br>1. Copy digit ☝️<br>2. Deriv Bot -> Digits -> Matches<br>3. Paste digit -> Stake $0.35 -> Run<br>4. Come back -> Tap ANALYZE again</div>
 <button onclick="analyze()">🔄 GET NEW DIGIT</button>
 </div>
 <script>
-let digits=[],ws=null,lastPrice=0;
+let digits=[],ws=null,lastPrice=0,tryN=0;
+let urls=['wss://ws.derivws.com/websockets/v3?app_id=1089','wss://ws.binaryws.com/websockets/v3?app_id=1089','wss://ws.derivws.com/websockets/v3?app_id=16929'];
 function connect(){
- if(ws) ws.close();
- document.getElementById('st').innerText='CONNECTING...';
- ws=new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=1089');
- ws.onopen=()=>{ws.send(JSON.stringify({ticks:document.getElementById('sym').value}));document.getElementById('st').innerText='LIVE ✅ NEW SERVER';};
+ if(ws) try{ws.close()}catch(e){}
+ let url=urls[tryN%urls.length]; tryN++;
+ document.getElementById('st').innerText='CONNECTING... Try '+tryN;
+ document.getElementById('err').innerText='';
+ ws=new WebSocket(url);
+ ws.onopen=()=>{ws.send(JSON.stringify({ticks:document.getElementById('sym').value}));document.getElementById('st').innerText='LIVE ✅';document.getElementById('st').style.color='#00ffc8';};
  ws.onmessage=(m)=>{let d=JSON.parse(m.data);if(d.tick){lastPrice=d.tick.quote;let dg=Math.floor(Math.abs(lastPrice*100)%10);digits.push(dg);if(digits.length>100)digits.shift();document.getElementById('price').innerText=lastPrice;document.getElementById('last').innerText=dg;document.getElementById('pat').innerText=digits.slice(-10).map(x=>x%2==0?'E':'O').join(' ');}};
- ws.onclose=()=>{setTimeout(connect,2000)};
+ ws.onerror=()=>{document.getElementById('err').innerText='Blocked - trying next server...';};
+ ws.onclose=()=>{if(digits.length<5) setTimeout(connect,2500);};
 }
-document.getElementById('sym').onchange=()=>{digits=[];connect()};
+document.getElementById('sym').onchange=()=>{digits=[];tryN=0;connect()};
 connect();
 function analyze(){
- if(digits.length<20){alert('Wait 5 sec, still loading '+digits.length+' ticks');return;}
+ if(digits.length<20){alert('Wait - still loading '+digits.length+' ticks. Tap RECONNECT and wait 10 sec.');return;}
  let counts=[0,0,0,0,0,0,0,0,0,0];digits.forEach(d=>counts[d]++);
  let best=0;counts.forEach((c,i)=>{if(c>counts[best])best=i});
  document.getElementById('out').style.display='block';
@@ -57,7 +53,7 @@ function analyze(){
  document.getElementById('take').innerText='TAKE '+best+' TO DBOT';
  let html='';counts.forEach((c,i)=>{html+='<div class="circ '+(i==best?'best':'')+'">'+i+'<br><b>'+c+'</b></div>'});
  document.getElementById('circles').innerHTML=html;
- document.getElementById('details').innerHTML='Best Digit: '+best+' appeared '+counts[best]+' times in last '+digits.length+'<br>Last 20: '+digits.slice(-20).join(', ')+'<br>Top 3: '+counts.map((c,i)=>({d:i,c})).sort((a,b)=>b.c-a.c).slice(0,3).map(x=>x.d+' ('+x.c+')').join(' , ');
+ document.getElementById('details').innerHTML='Best: '+best+' appeared '+counts[best]+' times in last '+digits.length+'<br>Last 20: '+digits.slice(-20).join(', ');
  window.scrollTo(0,document.body.scrollHeight);
 }
 </script></body></html>
