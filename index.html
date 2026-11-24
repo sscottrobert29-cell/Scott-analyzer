@@ -91,9 +91,9 @@ function connect(){
 }
 function subscribe(){
   ready=false;ticks=[];
-  ws.send(JSON.stringify({forget_all:'ticks'}));
+  ws.send(JSON.stringify({forget_all:['ticks']}));
   ws.send(JSON.stringify({ticks_history:market,end:'latest',count:1000,style:'ticks',subscribe:1}));
-  ws.send(JSON.stringify({ticks:market,subscribe:1}));
+  
 }
 $('mkt').onchange=()=>{market=$('mkt').value;if(ws.readyState===1)subscribe();};
 
